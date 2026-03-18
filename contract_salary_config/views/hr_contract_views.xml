@@ -14,7 +14,7 @@
 
             <!-- Add a new notebook page for Salary Structure -->
             <xpath expr="//notebook" position="inside">
-                <page name="salary_structure" string="Salary Structure">
+                <page name="salary_structure" string="Salary Structure" invisible="current_company_name != 'GERMAN TMT PRIVATE LIMITED'">
                     <group>
                         <group string="CTC Summary">
                             <field name="final_yearly_costs" widget="monetary" string="Annual CTC"/>
@@ -82,6 +82,75 @@
                                 <li>PF = 12% of Basic: <code>result = amount('BASIC') * 0.12</code></li>
                                 <li>Add Bonus to Gross: <code>result = amount('GROSS') + bonus</code></li>
                                 <li>In Hand = Gross - Deductions: <code>result = amount('GROSS') - amount('TOT_DED')</code></li>
+                            </ul>
+                        </div>
+                    </group>
+                </page>
+
+                <page name="salary_structure" string="Salary Structure" invisible="current_company_name != 'GERMAN GREEN STEEL AND POWER LIMITED'">
+                    <group>
+                        <group string="CTC Summary">
+                            <field name="final_yearly_costs" widget="monetary" string="Annual CTC"/>
+                            <field name="monthly_yearly_costs" widget="monetary" readonly="1" string="Monthly CTC"/>
+                        </group>
+                        <group string="Computed Summary">
+                            <field name="monthly_yearly_costs" widget="monetary" readonly="1" string="Gross Salary"/>
+                            <field name="inhand_salary" widget="monetary" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="salary_structure_id" options="{'no_create': True, 'no_edit': True}"/>
+                        </group>
+                        <group>
+                            <button name="action_refresh_salary_structure" 
+                                    string="Reload from Template" 
+                                    type="object" 
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    confirm="This will replace current lines with the template. Continue?"/>
+                            <button name="action_recompute_salary_amounts" 
+                                    string="Recalculate Amounts" 
+                                    type="object" 
+                                    class="btn-primary"
+                                    icon="fa-calculator"/>
+                        </group>
+                    </group>
+                    <separator string="Salary Components"/>
+                    <field name="salary_structure_line_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="code" optional="hide"/>
+                            <field name="code_id" optional="hide"/>
+                            <field name="impact" optional="hide"/>
+                            <field name="compute_mode" optional="hide"/>
+                            <field name="value" optional="hide" string="Value / %"/>
+                            <field name="python_code" optional="hide" widget="code"/>
+                            <field name="amount_monthly" widget="monetary" readonly="1"/>
+                            <field name="amount_annual" optional="hide" widget="monetary" readonly="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group>
+                        <div class="alert alert-info" role="alert">
+                            <strong>Compute Modes:</strong>
+                            <ul class="mb-0">
+                                <li><b>Percent of Annual CTC:</b> Value is percentage of monthly CTC (final_yearly_costs/12).</li>
+                                <li><b>Fixed Monthly Amount:</b> Value is the fixed monthly amount directly.</li>
+                                <li><b>Python Formula:</b> Use Python code with variables. Assign result to <code>result</code>.</li>
+                            </ul>
+                            <p class="mt-2 mb-0"><b>Available Variables:</b></p>
+                            <ul class="mb-0">
+                                <li><code>final_yearly_costs</code> - Annual CTC from contract</li>
+                                <li><code>monthly_yearly_costs</code> - Monthly CTC (Annual/12)</li>
+                                <li><code>amount('CODE')</code> - Get computed amount of another component</li>
+                            </ul>
+                            <p class="mt-2 mb-0"><b>Example Formulas:</b></p>
+                            <ul class="mb-0">
+                                <li>Basic = 60% of Gross Salary: <code> result = amount('GROSS') * 0.6</code></li>
+                                <li>Bonus = 8.33% of Gross Salary: <code> result = amount('GROSS') * 0.08.33</code></li>
+                                <li>In Hand = Gross - Deductions: <code> result = amount('GROSS') - amount('TOT_DED')</code></li>
                             </ul>
                         </div>
                     </group>

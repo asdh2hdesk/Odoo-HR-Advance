@@ -51,9 +51,12 @@ class HrContract(models.Model):
         store=True,
         help='Monthly Gross Salary derived from the GROSS line.',
     )
-
+    current_company_name = fields.Char(
+        string="Current Company",
+        default=lambda self: self.env.company.name
+    )
+    
     # Note: final_yearly_costs and monthly_yearly_costs are inherited from hr_contract_salary
-
     @api.depends('salary_structure_line_ids.amount_monthly')
     def _compute_inhand_salary(self):
         for contract in self:

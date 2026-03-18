@@ -30,8 +30,11 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Help &amp; Examples">
+                        <page string="Help &amp; Examples" invisible="company != 'GERMAN TMT PRIVATE LIMITED'">
                             <field name="examples_html" nolabel="1"/>
+                        </page>
+                        <page string="Help &amp; Examples" invisible="company != 'GERMAN GREEN STEEL AND POWER LIMITED'">
+                            <field name="german_tmt_html" nolabel="1"/>
                         </page>
                         <page string="Lines">
                             <field name="line_ids">

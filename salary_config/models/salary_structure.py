@@ -12,6 +12,8 @@ class SalaryConfigStructure(models.Model):
     line_ids = fields.One2many('salary.config.structure.line', 'structure_id', string='Lines')
     examples_html = fields.Html(string='Examples Help', sanitize=False, compute='_compute_examples_html', help='Examples of compute modes and formulas.')
 
+    company = fields.Char(related='company_id.name', readonly=True)
+    
     @api.depends()
     def _compute_examples_html(self):
         example = _("")
@@ -41,6 +43,39 @@ class SalaryConfigStructure(models.Model):
         """
         for rec in self:
             rec.examples_html = html
+            
+    german_tmt_html = fields.Html(string='Examples Help', sanitize=False, compute='_compute_german_TMT_html', help='Examples of compute modes and formulas.')
+
+    @api.depends()
+    def _compute_german_TMT_html(self):
+        example = _("")
+        html = """
+        <h3>Salary Component Examples</h3>
+        <p>This section illustrates how to configure lines using <b>Compute Mode</b> values: <code>Percent of Employer Budget (yearly)</code>, <code>Fixed Monthly Amount</code>, and <code>Python Formula</code>.</p>
+        <ul>
+          <li><b>Percent of Employer Budget (yearly)</b>: Set <i>Compute Mode</i> to percentage and enter <i>Value</i>. Example: Basic = 60% of monthly budget (CTC / 12). Set <code>compute_mode = percent_yearly</code> and <code>value = 60</code>.</li>
+          <li><b>Fixed Monthly Amount</b>: Set <code>compute_mode = fixed_monthly</code> and provide the monthly amount in <i>Value</i>. Example: Transport Allowance of 1600 monthly.</li>
+          <li><b>Python Formula</b>: Set <code>compute_mode = formula</code> and write Python assigning a numeric result to the variable <code>result</code>. Available variables: <code>final_yearly_costs</code> (CTC), <code>monthly_budget</code> (CTC/12), and previously computed line codes accessible via helper dictionary building coming soon; for now reference only budget.</li>
+        </ul>
+        <p>Demo ideas inspired by the provided demo XML:</p>
+        <pre>
+        # Basic = 60% of monthly budget (use percent_yearly, value 60)
+        # HRA = 15% of monthly budget (formula)
+        result = monthly_budget * 0.15
+
+        # Conveyance allowances = 4% of monthly budget (formula)
+        result = monthly_budget * 0.04
+
+        # Medical allowances = 2.719% of monthly budget (formula)
+        result = monthly_budget * 0.02719
+
+        # Other Allowances = monthly_budget - (Basic + HRA + Conveyance + Medical)
+        # (Would require summing previously computed amounts by code in extended logic.)
+        </pre>
+        <p><b>In Hand Salary (INHAND)</b> line is auto-created. Adjust its formula as needed.</p>
+        """
+        for rec in self:
+            rec.german_tmt_html = html 
 
     @api.model_create_multi
     def create(self, vals_list):
