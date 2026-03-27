@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_biometric_device,biometric.device,model_biometric_device,,1,1,1,1
+access_biometric_log,biometric.log,model_biometric_log,,1,1,1,1

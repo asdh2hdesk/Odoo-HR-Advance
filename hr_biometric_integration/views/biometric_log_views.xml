@@ -1,0 +1,27 @@
+<odoo>
+    <record id="action_biometric_logs" model="ir.actions.act_window">
+        <field name="name">Biometric Logs</field>
+        <field name="res_model">biometric.log</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_biometric_logs"
+              name="Logs"
+              parent="menu_biometric_root"
+              action="action_biometric_logs"
+              sequence="20"/>
+
+    <record id="view_biometric_log_tree" model="ir.ui.view">
+        <field name="name">biometric.log.list</field>
+        <field name="model">biometric.log</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="device_id"/>
+                <field name="enroll_id"/>
+                <field name="employee_id"/>
+                <field name="punch_time"/>
+                <field name="mode"/>
+            </list>
+        </field>
+    </record>
+</odoo>
