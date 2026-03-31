@@ -19,28 +19,58 @@ class BiometricDevice(models.Model):
     last_sync = fields.Datetime(string="Last Synced", readonly=True)
 
     def action_test_connection(self):
-        url = f"http://{self.ip_address}/api"
-        payload = {"password": self.password, "cmd": "getlog", "index": 0}
-        try:
-            r = requests.post(url, json=payload, timeout=5)
-            data = r.json()
-            if r.status_code == 200 and data.get('result'):
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'title': 'Connection Successful',
-                        'message': f"Device {data.get('sn', '')} is reachable.",
-                        'type': 'success',
-                        'sticky': False,
-                    }
-                }
-            else:
-                raise UserError("Connection Failed! Check IP or password.")
-        except UserError:
-            raise
-        except Exception as e:
-            raise UserError(f"Connection Error: {str(e)}")
+        """Test connectivity indirectly using logs pushed by the gateway.
+
+                Since the Odoo server cannot reach 192.168.x.x directly, we treat a
+                recent log from this device (via the on‑prem gateway) as proof that
+                the device and gateway are both working.
+                """
+        self.ensure_one()
+
+        # Look for most recent log for this device
+        log = self.env['biometric.log'].search(
+            [('device_id', '=', self.id)],
+            order='punch_time desc',
+            limit=1,
+        )
+
+        if not log:
+            raise UserError(
+                "No logs received yet from this device via the gateway.\n"
+                "Please confirm the Windows gateway service is running and "
+                "that this device IP is configured in its config.json."
+            )
+
+        # Optional: consider "recent" = last 24 hours
+        now_utc = fields.Datetime.now()
+        delta = now_utc - log.punch_time
+        hours = delta.total_seconds() / 3600.0
+
+        title = 'Gateway Connected'
+        if hours <= 24:
+            msg = (
+                f"Last log from this device was received "
+                f"{delta} ago at {log.punch_time} (UTC)."
+            )
+            notif_type = 'success'
+        else:
+            msg = (
+                "Device has sent logs via gateway before, but not in the last "
+                "24 hours.\n"
+                f"Last log time: {log.punch_time} (UTC)."
+            )
+            notif_type = 'warning'
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': msg,
+                'type': notif_type,
+                'sticky': False,
+            },
+        }
 
     def sync_device_logs(self):
         for device in self.search([('active', '=', True)]):
