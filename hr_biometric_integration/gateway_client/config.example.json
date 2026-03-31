@@ -1,0 +1,19 @@
+{
+  "odoo_url": "http://20.193.254.185:8069",
+  "odoo_token": "CHANGE_ME_TO_LONG_RANDOM_SECRET",
+  "poll_interval_seconds": 60,
+  "devices": [
+    {
+      "name": "Punch IN",
+      "ip": "192.168.20.141",
+      "password": "device_password_here",
+      "type": "in"
+    },
+    {
+      "name": "Punch OUT",
+      "ip": "192.168.20.142",
+      "password": "device_password_here",
+      "type": "out"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 from datetime import datetime
 import pytz
 
@@ -72,3 +72,38 @@ class BiometricLog(models.Model):
 
             if attendance and punch_dt > attendance.check_in:
                 attendance.check_out = punch_dt
+
+    @api.model
+    def process_gateway_payload(self, device_data, records):
+        """Process logs pushed by an on‑prem gateway service.
+
+        Expected payload structure (already validated by controller):
+        - device_data: dict with at least 'ip', optionally 'name' and 'type'
+        - records: list of dicts exactly as returned by the device /api
+        """
+        if not records:
+            return
+
+        device_ip = device_data.get('ip')
+        if not device_ip:
+            return
+
+        device_name = device_data.get('name') or device_ip
+        device_type = device_data.get('type') or 'in'
+
+        device = self.env['biometric.device'].search(
+            [('ip_address', '=', device_ip)],
+            limit=1,
+        )
+
+        if not device:
+            device = self.env['biometric.device'].create({
+                'name': device_name,
+                'ip_address': device_ip,
+                'password': 'managed_by_gateway',
+                'device_type': device_type,
+            })
+
+        for rec in records:
+            # Reuse existing duplication checks / attendance logic
+            self.create_log(device, rec)
