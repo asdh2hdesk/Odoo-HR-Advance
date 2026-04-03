@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, SUPERUSER_ID
 from datetime import datetime
 import pytz
 
@@ -83,6 +83,10 @@ class BiometricLog(models.Model):
         """
         if not records:
             return
+
+        # Gateway route uses auth='none'; hr.employee search checks env.user.has_group,
+        # which requires a singleton user — run as superuser for this path only.
+        self = self.with_user(SUPERUSER_ID)
 
         device_ip = device_data.get('ip')
         if not device_ip:
