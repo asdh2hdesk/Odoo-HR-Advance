@@ -35,7 +35,7 @@
     <!-- Parent Menu (Container - NO action) -->
     <menuitem id="menu_salary_report_root"
               name="Salary Report"
-              sequence="100"
+              sequence="195"
               web_icon="salary_report,static/description/icon.png"/>
 
     <!-- Force clear action from parent menu -->
@@ -43,7 +43,7 @@
 
     <menuitem id="menu_salary_report_root"
               name="Salary Report"
-              sequence="100"
+              sequence="195"
               web_icon="salary_report,static/description/icon.png"/>
 
     <!-- Child Menu 1: Salary Report -->
