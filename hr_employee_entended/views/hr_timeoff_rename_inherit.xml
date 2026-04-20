@@ -39,6 +39,11 @@
         <field name="name">My Leaves</field>
     </record>
 
+    <!-- Hide "My Time" top-level menu item -->
+    <record id="hr_holidays.menu_hr_holidays_my_leaves" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
     <!-- Our module: rename allocation items to Leaves -->
     <record id="action_open_multi_timeoff_allocation" model="ir.actions.act_window">
         <field name="name">Allocate Leaves (All Employees)</field>
