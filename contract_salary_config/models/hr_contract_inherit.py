@@ -19,6 +19,12 @@ class HrContract(models.Model):
         copy=True,
     )
 
+    def get_salary_breakdown_amount(self, code):
+        """Helper for Standard Salary Rules to get breakdown values from custom config."""
+        self.ensure_one()
+        line = self.salary_structure_line_ids.filtered(lambda l: l.code == code)[:1]
+        return line.amount_monthly if line else 0.0
+
     # Bonus field - additional allowance
     bonus_amount = fields.Monetary(
         string='Bonus',
