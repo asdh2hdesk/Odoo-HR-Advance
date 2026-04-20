@@ -51,4 +51,28 @@
         </field>
     </record>
 
+    <!-- Hide Create Draft Entry button in Payslip -->
+    <record id="view_hr_payslip_form_hide_create_draft" model="ir.ui.view">
+        <field name="name">hr.payslip.form.hide.create.draft</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll_account.hr_payslip_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_payslip_done']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Hide Create Draft Entry button in Payslip Batch -->
+    <record id="hr_payslip_run_view_form_hide_create_draft" model="ir.ui.view">
+        <field name="name">hr.payslip.run.form.hide.create.draft</field>
+        <field name="model">hr.payslip.run</field>
+        <field name="inherit_id" ref="hr_payroll_account.hr_payslip_run_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_validate']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

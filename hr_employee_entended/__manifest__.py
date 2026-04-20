@@ -13,7 +13,7 @@
     "summary": "Human Resources Employees Management System Extended Module",
     "depends": ["hr", "hr_recruitment",
                 'hr_attendance', 'hr_holidays', 'hr_contract','hr_org_chart', 
-                'hr_payroll', 
+                'hr_payroll', 'hr_payroll_account', 
                 # 'hr_expense',
                 'hr_induction', 'hr_employee_updation', 'hr_timesheet',
                 'EHS',
