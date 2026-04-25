@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import api, models, fields
 from odoo.exceptions import UserError
 from io import BytesIO
 import base64
@@ -10,16 +10,61 @@ class GermanSalaryReportWizard(models.TransientModel):
     _name = "german.salary.report.wizard"
     _description = "German Salary Report"
 
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+    )
     date_from = fields.Date(string="From Date", required=True)
     date_to = fields.Date(string="To Date", required=True)
 
     all_employee = fields.Boolean(string="All Employees")
-    employee_ids = fields.Many2many("hr.employee", string="Employees")
+    employee_ids = fields.Many2many(
+        "hr.employee",
+        string="Employees",
+        domain="[('active', '=', True), ('company_id', '=', company_id)]",
+    )
+
+    @api.onchange("company_id")
+    def _onchange_company_id(self):
+        allowed_employees = self._get_employees_for_company()
+        self.employee_ids = self.employee_ids.filtered(lambda emp: emp in allowed_employees)
+
+    def _get_company_scoped_self(self):
+        self.ensure_one()
+        return self.with_company(self.company_id).with_context(
+            allowed_company_ids=[self.company_id.id]
+        )
+
+    def _get_employees_for_company(self):
+        scoped_self = self._get_company_scoped_self()
+        return scoped_self.env["hr.employee"].search([
+            ("active", "=", True),
+            ("company_id", "=", scoped_self.company_id.id),
+        ])
+
+    def _get_selected_employees(self):
+        self.ensure_one()
+        employees = self._get_employees_for_company()
+        if self.all_employee:
+            return employees
+        if not self.employee_ids:
+            raise UserError("Please select employees or tick All Employees.")
+        return employees.filtered(lambda emp: emp.id in self.employee_ids.ids)
+
+    def _get_report_employee(self, employee):
+        self.ensure_one()
+        return employee.sudo().with_company(self.company_id).with_context(
+            allowed_company_ids=[self.company_id.id]
+        )
 
     def action_bulk_enable_pf(self):
-        contracts = self.env['hr.contract'].search([
+        scoped_self = self._get_company_scoped_self()
+        contracts = scoped_self.env['hr.contract'].search([
             ('state', '=', 'open'),
-            ('l10n_in_provident_fund', '=', False)
+            ('l10n_in_provident_fund', '=', False),
+            ('company_id', '=', scoped_self.company_id.id),
         ])
 
         if not contracts:
@@ -41,8 +86,11 @@ class GermanSalaryReportWizard(models.TransientModel):
         }
 
     def action_generate_excel(self):
+        self = self._get_company_scoped_self()
         if self.date_from > self.date_to:
             raise UserError("From Date cannot be greater than To Date")
+
+        employees = self._get_selected_employees()
 
         from openpyxl import Workbook
         from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
@@ -72,17 +120,6 @@ class GermanSalaryReportWizard(models.TransientModel):
         ws.row_dimensions[2].height = 20
         ws.row_dimensions[3].height = 41
 
-        if self.all_employee:
-            employees = self.env["hr.employee"].search([
-                ("active", "=", True),
-                ("company_id", "=", self.env.company.id),
-            ])
-        else:
-            if not self.employee_ids:
-                raise UserError("Please select employees or tick All Employees.")
-            employees = self.employee_ids
-
-
         headers = [
             "Emp Code", "Other Bank Ac No", "ICICI Ac No",
             "PF?", "ESIC?", "UAN", "ESIC NO", "Employee Name",
@@ -109,7 +146,7 @@ class GermanSalaryReportWizard(models.TransientModel):
 
 
         # 🔴 FIX: FETCH COMPANY NAME & ADDRESS FROM COMPANY ID
-        company = self.env.company
+        company = self.company_id
         partner = company.partner_id
 
         address_parts = [
@@ -175,6 +212,7 @@ class GermanSalaryReportWizard(models.TransientModel):
         row = header_row + 1
 
         for emp in employees:
+            emp_report = self._get_report_employee(emp)
             emp_slips = slip_map.get(emp.id, [])
 
             paid_days = 0.0
@@ -183,9 +221,7 @@ class GermanSalaryReportWizard(models.TransientModel):
                     if wd.is_paid:
                         paid_days += wd.number_of_days
 
-
-
-            structure_lines = emp.contract_id.salary_structure_line_ids if emp.contract_id else self.env[
+            structure_lines = emp_report.contract_id.salary_structure_line_ids if emp_report.contract_id else self.env[
                 'hr.contract.salary.structure.line']
 
             def get_amt(code):
@@ -205,7 +241,7 @@ class GermanSalaryReportWizard(models.TransientModel):
             net = get_amt('INHAND')
 
             pf = round(pf_salary * 0.12, 0) if pf_salary else 0.0
-            pf_flag = "Yes" if emp.contract_id and emp.contract_id.is_pf_deduct else "No"
+            pf_flag = "Yes" if emp_report.contract_id and emp_report.contract_id.is_pf_deduct else "No"
 
             esic = 0.0  # ESIC not defined in structure yet
 
@@ -213,27 +249,27 @@ class GermanSalaryReportWizard(models.TransientModel):
 
             other_bank_ac = ""
             icici_ac = ""
-            if emp.bank_account_id and emp.bank_account_id.bank_id:
-                bank_name = (emp.bank_account_id.bank_id.name or "").upper()
-                acc_no = emp.bank_account_id.acc_number or ""
+            if emp_report.bank_account_id and emp_report.bank_account_id.bank_id:
+                bank_name = (emp_report.bank_account_id.bank_id.name or "").upper()
+                acc_no = emp_report.bank_account_id.acc_number or ""
                 if "ICICI" in bank_name:
                     icici_ac = acc_no
                 else:
                     other_bank_ac = acc_no
 
             data = [
-                emp.employee_code or "",
+                emp_report.employee_code or "",
                 other_bank_ac,
                 icici_ac,
                 pf_flag,
                 "Yes" if esic else "No",
-                emp.l10n_in_uan or "Not Available",
-                emp.l10n_in_esic_number or "Not Available",
-                emp.name,
+                emp_report.l10n_in_uan or "Not Available",
+                emp_report.l10n_in_esic_number or "Not Available",
+                emp_report.name,
                 gross,
-                emp.department_id.name if emp.department_id else "",
-                emp.job_id.name if emp.job_id else "",
-                emp.contract_id.final_yearly_costs if emp.contract_id else 0,
+                emp_report.department_id.name if emp_report.department_id else "",
+                emp_report.job_id.name if emp_report.job_id else "",
+                emp_report.contract_id.final_yearly_costs if emp_report.contract_id else 0,
                 gross,
                 basic,
                 hra,
@@ -289,6 +325,9 @@ class GermanSalaryReportWizard(models.TransientModel):
             "type": "binary",
             "datas": base64.b64encode(output.read()),
             "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "company_id": self.company_id.id,
+            "res_model": self._name,
+            "res_id": self.id,
         })
 
         return {

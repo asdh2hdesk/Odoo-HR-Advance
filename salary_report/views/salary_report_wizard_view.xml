@@ -8,11 +8,13 @@
         <field name="arch" type="xml">
             <form string="Salary Report">
                 <group>
+                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True, 'no_open': True}"/>
                     <field name="date_from"/>
                     <field name="date_to"/>
                     <field name="all_employee"/>
                     <field name="employee_ids"
                            widget="many2many_tags"
+                           domain="[('active', '=', True), ('company_id', '=', company_id)]"
                            invisible="all_employee"/>
                     <button name="action_generate_excel"
                             type="object"
@@ -30,27 +32,21 @@
         <field name="res_model">salary.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">current</field>
+        <field name="groups_id" eval="[(6, 0, [ref('hr_payroll.group_hr_payroll_manager')])]"/>
     </record>
 
-    <!-- Parent Menu (Container - NO action) -->
     <menuitem id="menu_salary_report_root"
               name="Salary Report"
               sequence="195"
-              web_icon="salary_report,static/description/icon.png"/>
-
-    <!-- Force clear action from parent menu -->
-    <delete model="ir.model.data" search="[('name', '=', 'menu_salary_report_root'), ('module', '=', 'salary_report')]"/>
-
-    <menuitem id="menu_salary_report_root"
-              name="Salary Report"
-              sequence="195"
-              web_icon="salary_report,static/description/icon.png"/>
+              web_icon="salary_report,static/description/icon.png"
+              groups="hr_payroll.group_hr_payroll_manager"/>
 
     <!-- Child Menu 1: Salary Report -->
     <menuitem id="menu_salary_report_child"
               name="Salary Report"
               parent="menu_salary_report_root"
               action="action_salary_report_wizard"
-              sequence="10"/>
+              sequence="10"
+              groups="hr_payroll.group_hr_payroll_manager"/>
 
 </odoo>
