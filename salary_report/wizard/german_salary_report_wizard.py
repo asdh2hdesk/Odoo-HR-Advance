@@ -479,6 +479,7 @@ class GermanSalaryReportWizard(models.TransientModel):
             ws[f"AQ{row}"] = ""
             row += 1
 
+
         output = BytesIO()
         wb.save(output)
         output.seek(0)

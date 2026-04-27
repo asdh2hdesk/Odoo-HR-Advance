@@ -235,6 +235,7 @@ class SalaryReportWizard(models.TransientModel):
             v = self._by_name(lines, 'esic', 'esi')
         return abs(v)
 
+
     def _get_component_pt(self, lines):
         v = self._by_code(lines, 'PT', 'PROF_TAX', 'PROFESSIONAL_TAX', 'P_TAX', 'P_TAX_DED')
         if not v:
