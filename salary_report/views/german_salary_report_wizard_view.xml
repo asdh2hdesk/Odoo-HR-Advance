@@ -8,11 +8,13 @@
         <field name="arch" type="xml">
             <form string="German Salary Report">
                 <group>
+                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True, 'no_open': True}"/>
                     <field name="date_from"/>
                     <field name="date_to"/>
                     <field name="all_employee"/>
                     <field name="employee_ids"
                            widget="many2many_tags"
+                           domain="[('active', '=', True), ('company_id', '=', company_id)]"
                            invisible="all_employee"/>
                     <button name="action_generate_excel"
                             type="object"
@@ -29,6 +31,7 @@
         <field name="res_model">german.salary.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">current</field>
+        <field name="groups_id" eval="[(6, 0, [ref('hr_payroll.group_hr_payroll_manager')])]"/>
     </record>
 
 
@@ -36,6 +39,7 @@
               name="German Salary Report"
               parent="salary_report.menu_salary_report_root"
               action="action_german_salary_report_wizard"
-              sequence="20"/>
+              sequence="20"
+              groups="hr_payroll.group_hr_payroll_manager"/>
 
 </odoo>
