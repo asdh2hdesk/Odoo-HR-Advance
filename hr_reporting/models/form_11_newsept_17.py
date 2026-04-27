@@ -241,12 +241,12 @@ class HrCustomFormEleven(models.Model):
             self.employee_id.name or "",
             self.father_name or "",
             self.spouse_name or "",
-            self.date_of_birth.strftime('%d-%m-%Y')  or "",
+            self.date_of_birth.strftime('%d-%m-%Y') if self.date_of_birth else "",
             self.gender or "",
             self.marital_status or "",
             self.email or "",
             self.mobile or "",
-            self.present_joining_date.strftime('%d-%m-%Y') or "",
+            self.present_joining_date.strftime('%d-%m-%Y') if self.present_joining_date else "",
             "",
             self.bank_account_no or "",
             self.bank_ifsc or "",
@@ -292,8 +292,8 @@ class HrCustomFormEleven(models.Model):
             prev1.cell(row_index, 0).text = rec.establishment or ""
             prev1.cell(row_index, 1).text = str(rec.uan) or ""
             prev1.cell(row_index, 2).text = str(rec.pf_account) or ""
-            prev1.cell(row_index, 3).text = str(rec.joining_date.strftime('%d-%m-%Y')) or ""
-            prev1.cell(row_index, 4).text = str(rec.exit_date.strftime('%d-%m-%Y')) or ""
+            prev1.cell(row_index, 3).text = str(rec.joining_date.strftime('%d-%m-%Y')) if rec.joining_date else ""
+            prev1.cell(row_index, 4).text = str(rec.exit_date.strftime('%d-%m-%Y')) if rec.exit_date else ""
             prev1.cell(row_index, 5).text = str(rec.scheme_certificate) or ""
             prev1.cell(row_index, 6).text = str(rec.ppo_number) or ""
             prev1.cell(row_index, 7).text = str(rec.ncp_days) or ""
@@ -328,7 +328,7 @@ class HrCustomFormEleven(models.Model):
             prev2.cell(row_index, 1).text = str(rec.uan) or ""
             prev2.cell(row_index, 2).text = str(rec.eps_account) or ""
             prev2.cell(row_index, 3).text = str(rec.joining_date.strftime('%d-%m-%Y')) or ""
-            prev2.cell(row_index, 4).text = str(rec.exit_date.strftime('%d-%m-%Y')) or ""
+            prev1.cell(row_index, 4).text = str(rec.exit_date.strftime('%d-%m-%Y')) if rec.exit_date else ""
             prev2.cell(row_index, 5).text = str(rec.scheme_certificate) or ""
             prev2.cell(row_index, 6).text = str(rec.ncp_days) or ""
 
@@ -390,7 +390,7 @@ class HrCustomFormEleven(models.Model):
         d.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         doc.add_paragraph(
-            f"A.   The member Mr/Ms/Mrs {self.employee_id.name or ''} has joined on {str(self.present_joining_date.strftime('%d-%m-%Y') or '')} "
+            f"A.   The member Mr/Ms/Mrs {self.employee_id.name or ''} has joined on {str(self.present_joining_date.strftime('%d-%m-%Y') if self.present_joining_date else '')} "
             f"and has been allotted PF No _______________ and UAN {self.employee_id.l10n_in_uan}."
         )
 
