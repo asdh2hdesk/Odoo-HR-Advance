@@ -248,7 +248,6 @@ class SalaryReportWizard(models.TransientModel):
         if not v and basic:
             v = min(basic + conveyance + lta, 15000)
         return v
-
     def action_generate_excel(self):
         self = self._get_company_scoped_self()
         if self.date_from > self.date_to:

@@ -477,7 +477,6 @@ class GermanSalaryReportWizard(models.TransientModel):
             ws[f"AO{row}"] = f"=U{row}"
             ws[f"AP{row}"] = ""
             ws[f"AQ{row}"] = ""
-
             row += 1
 
         output = BytesIO()
