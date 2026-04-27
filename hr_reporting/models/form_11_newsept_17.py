@@ -109,9 +109,10 @@ class HrCustomFormEleven(models.Model):
 
         p = cell.paragraphs[0]
         run = p.add_run()
-        run.add_picture("C:\\Users\\Admin\\Desktop\\MEERA\\HR\\emp.png",
-            width=Inches(0.6)
-        )
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        image_path = os.path.join(module_path, "static", "images", "emp.png")
+        if os.path.exists(image_path):
+            run.add_picture(image_path, width=Cm(1.6))
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
@@ -138,10 +139,10 @@ class HrCustomFormEleven(models.Model):
 
         p = cell.paragraphs[0]
         run = p.add_run()
-        run.add_picture(
-            "C:\\Users\\Admin\\Desktop\\MEERA\\HR\\pandit.png",
-            width=Inches(0.6)
-        )
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        image_path = os.path.join(module_path, "static", "images", "pandit.png")
+        if os.path.exists(image_path):
+            run.add_picture(image_path, width=Cm(1.6))
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
 
@@ -188,9 +189,10 @@ class HrCustomFormEleven(models.Model):
 
         p = cell.paragraphs[0]
         run = p.add_run()
-        run.add_picture("C:\\Users\\Admin\\Desktop\\MEERA\\HR\\emp.png",
-            width=Inches(0.6)
-        )
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        image_path = os.path.join(module_path, "static", "images", "emp.png")
+        if os.path.exists(image_path):
+            run.add_picture(image_path, width=Cm(1.6))
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
@@ -345,12 +347,19 @@ class HrCustomFormEleven(models.Model):
             "Passport No:",
             "Validity of passport [(DD/MM/YYYY) to (DD/MM/YYYY)]",
         ]
+
+        passport_validity = ""
+
+        if self.passport_valid_from or self.passport_valid_to:
+            from_date = self.passport_valid_from.strftime('%d-%m-%Y') if self.passport_valid_from else ''
+            to_date = self.passport_valid_to.strftime('%d-%m-%Y') if self.passport_valid_to else ''
+            passport_validity = f"{from_date} to {to_date}"
         
         data = [
             self.international_worker or '',
             self.origin_country or '',
             self.passport_no or '',
-            f"{self.passport_valid_from.strftime('%d-%m-%Y') or ''} to {self.passport_valid_to.strftime('%d-%m-%Y') or ''}"
+            passport_validity,
         ]
 
         for i, label in enumerate(header):
