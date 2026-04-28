@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_starlink_reconcile_wizard_form" model="ir.ui.view">
+        <field name="name">starlink.reconcile.wizard.form</field>
+        <field name="model">starlink.reconcile.wizard</field>
+        <field name="arch" type="xml">
+            <form string="StarLink Reconciliation">
+                <sheet>
+                    <group>
+                        <group string="Window">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Last Run" invisible="not log_count">
+                            <field name="log_count"/>
+                            <field name="paired_count"/>
+                            <field name="exception_count"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">
+                        Re-runs pairing for every <code>starlink.sync.log</code> in the window
+                        whose status is not yet <code>paired</code>. Existing
+                        <code>hr.attendance</code> records matching <code>employee_id</code> +
+                        <code>check_in</code> are kept untouched — only gaps are filled and
+                        new exceptions logged.
+                    </p>
+                </sheet>
+                <footer>
+                    <button name="action_run"
+                            string="Run Reconciliation"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_starlink_reconcile_wizard" model="ir.actions.act_window">
+        <field name="name">Reconciliation</field>
+        <field name="res_model">starlink.reconcile.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

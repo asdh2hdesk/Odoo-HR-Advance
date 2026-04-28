@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_starlink_punch_exception_list" model="ir.ui.view">
+        <field name="name">starlink.punch.exception.list</field>
+        <field name="model">starlink.punch.exception</field>
+        <field name="arch" type="xml">
+            <list string="Punch Exceptions"
+                  decoration-success="resolved"
+                  decoration-danger="severity == 'high' and not resolved"
+                  decoration-warning="severity == 'medium' and not resolved">
+                <field name="punch_time"/>
+                <field name="badge_code"/>
+                <field name="employee_id"/>
+                <field name="issue_type"/>
+                <field name="severity" widget="badge"
+                       decoration-danger="severity == 'high'"
+                       decoration-warning="severity == 'medium'"
+                       decoration-info="severity == 'low'"/>
+                <field name="resolved" widget="boolean_toggle"/>
+                <field name="resolved_by" optional="hide"/>
+                <field name="resolved_at" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <button name="action_resolve" type="object"
+                        string="Resolve" icon="fa-check"
+                        invisible="resolved"/>
+                <button name="action_retry" type="object"
+                        string="Retry" icon="fa-refresh"
+                        invisible="resolved"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_starlink_punch_exception_form" model="ir.ui.view">
+        <field name="name">starlink.punch.exception.form</field>
+        <field name="model">starlink.punch.exception</field>
+        <field name="arch" type="xml">
+            <form string="Punch Exception">
+                <header>
+                    <button name="action_resolve" type="object"
+                            string="Mark Resolved" class="btn-primary"
+                            invisible="resolved"/>
+                    <button name="action_unresolve" type="object"
+                            string="Re-open" class="btn-secondary"
+                            invisible="not resolved"/>
+                    <button name="action_retry" type="object"
+                            string="Retry Pairing" class="btn-secondary"
+                            invisible="resolved"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Resolved" bg_color="bg-success"
+                            invisible="not resolved"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="badge_code"/>
+                            <field name="punch_time"/>
+                            <field name="issue_type"/>
+                            <field name="severity"/>
+                        </group>
+                        <group>
+                            <field name="resolved"/>
+                            <field name="resolved_by"/>
+                            <field name="resolved_at"/>
+                            <field name="related_attendance_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Resolution Notes">
+                        <field name="resolution_notes" nolabel="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Linked Sync Logs">
+                            <field name="sync_log_ids" readonly="1">
+                                <list>
+                                    <field name="punch_time"/>
+                                    <field name="badge_code"/>
+                                    <field name="inout"/>
+                                    <field name="sync_status"/>
+                                    <field name="error_message"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_starlink_punch_exception_search" model="ir.ui.view">
+        <field name="name">starlink.punch.exception.search</field>
+        <field name="model">starlink.punch.exception</field>
+        <field name="arch" type="xml">
+            <search string="Punch Exceptions">
+                <field name="badge_code"/>
+                <field name="employee_id"/>
+                <filter name="unresolved" string="Unresolved"
+                        domain="[('resolved', '=', False)]"/>
+                <filter name="resolved" string="Resolved"
+                        domain="[('resolved', '=', True)]"/>
+                <separator/>
+                <filter name="orphan_out" string="Orphan OUT"
+                        domain="[('issue_type', '=', 'orphan_out')]"/>
+                <filter name="duplicate_in" string="Duplicate IN"
+                        domain="[('issue_type', '=', 'duplicate_in')]"/>
+                <filter name="bad_duration" string="Bad Duration"
+                        domain="[('issue_type', '=', 'bad_duration')]"/>
+                <filter name="employee_not_mapped" string="Employee Not Mapped"
+                        domain="[('issue_type', '=', 'employee_not_mapped')]"/>
+                <filter name="missing_checkout" string="Missing Checkout"
+                        domain="[('issue_type', '=', 'missing_checkout')]"/>
+                <filter name="ingestion_error" string="Ingestion Error"
+                        domain="[('issue_type', '=', 'ingestion_error')]"/>
+                <separator/>
+                <filter name="severity_high" string="High Severity"
+                        domain="[('severity', '=', 'high')]"/>
+                <filter name="severity_medium" string="Medium Severity"
+                        domain="[('severity', '=', 'medium')]"/>
+                <separator/>
+                <filter name="last_30_days" string="Last 30 Days"
+                        domain="[('punch_time', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_issue" string="Issue Type"
+                            context="{'group_by': 'issue_type'}"/>
+                    <filter name="group_severity" string="Severity"
+                            context="{'group_by': 'severity'}"/>
+                    <filter name="group_resolved" string="Resolved"
+                            context="{'group_by': 'resolved'}"/>
+                    <filter name="group_employee" string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_company" string="Company" groups="base.group_multi_company"
+                            context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_starlink_punch_exception_pivot" model="ir.ui.view">
+        <field name="name">starlink.punch.exception.pivot</field>
+        <field name="model">starlink.punch.exception</field>
+        <field name="arch" type="xml">
+            <pivot string="Punch Exceptions" sample="1">
+                <field name="issue_type" type="row"/>
+                <field name="severity" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_starlink_punch_exception_graph" model="ir.ui.view">
+        <field name="name">starlink.punch.exception.graph</field>
+        <field name="model">starlink.punch.exception</field>
+        <field name="arch" type="xml">
+            <graph string="Punch Exceptions" type="bar" sample="1">
+                <field name="issue_type"/>
+                <field name="resolved"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_starlink_punch_exception" model="ir.actions.act_window">
+        <field name="name">Exceptions</field>
+        <field name="res_model">starlink.punch.exception</field>
+        <field name="view_mode">list,form,pivot,graph,search</field>
+        <field name="search_view_id" ref="view_starlink_punch_exception_search"/>
+        <field name="context">{'search_default_unresolved': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No exceptions — clean sync!</p>
+            <p>Problem punches (orphans, duplicates, bad durations, unmapped employees, missing checkouts) will appear here.</p>
+        </field>
+    </record>
+
+</odoo>

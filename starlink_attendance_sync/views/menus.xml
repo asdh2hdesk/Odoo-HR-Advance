@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_starlink_root"
+              name="StarLink Sync"
+              parent="hr_attendance.menu_hr_attendance_root"
+              sequence="50"
+              groups="starlink_attendance_sync.group_starlink_user"/>
+
+    <menuitem id="menu_starlink_dashboard"
+              name="KPI Dashboard"
+              parent="menu_starlink_root"
+              action="action_starlink_dashboard"
+              sequence="10"/>
+
+    <menuitem id="menu_starlink_sync_logs"
+              name="Sync Logs"
+              parent="menu_starlink_root"
+              action="action_starlink_sync_log"
+              sequence="20"/>
+
+    <menuitem id="menu_starlink_exceptions"
+              name="Exceptions"
+              parent="menu_starlink_root"
+              action="action_starlink_punch_exception"
+              sequence="30"/>
+
+    <menuitem id="menu_starlink_reconcile"
+              name="Reconciliation"
+              parent="menu_starlink_root"
+              action="action_starlink_reconcile_wizard"
+              sequence="40"/>
+
+    <menuitem id="menu_starlink_checkpoints"
+              name="Checkpoints"
+              parent="menu_starlink_root"
+              action="action_starlink_sync_checkpoint"
+              sequence="50"
+              groups="starlink_attendance_sync.group_starlink_manager"/>
+
+</odoo>

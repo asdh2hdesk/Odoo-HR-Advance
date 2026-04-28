@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_starlink_sync_log_list" model="ir.ui.view">
+        <field name="name">starlink.sync.log.list</field>
+        <field name="model">starlink.sync.log</field>
+        <field name="arch" type="xml">
+            <list string="Sync Logs"
+                  decoration-success="sync_status == 'paired'"
+                  decoration-danger="sync_status == 'error'"
+                  decoration-warning="sync_status == 'skipped'"
+                  decoration-muted="sync_status == 'pending'">
+                <field name="punch_time"/>
+                <field name="badge_code"/>
+                <field name="employee_id"/>
+                <field name="inout"/>
+                <field name="shift_code"/>
+                <field name="machine_id" optional="hide"/>
+                <field name="sync_status" widget="badge"
+                       decoration-success="sync_status == 'paired'"
+                       decoration-danger="sync_status == 'error'"
+                       decoration-warning="sync_status == 'skipped'"/>
+                <field name="attendance_id" optional="show"/>
+                <field name="exception_id" optional="hide"/>
+                <field name="processed_at" optional="hide"/>
+                <field name="error_message" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <button name="action_reprocess" type="object"
+                        string="Reprocess" icon="fa-refresh"
+                        invisible="sync_status == 'paired'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_starlink_sync_log_form" model="ir.ui.view">
+        <field name="name">starlink.sync.log.form</field>
+        <field name="model">starlink.sync.log</field>
+        <field name="arch" type="xml">
+            <form string="Sync Log">
+                <header>
+                    <button name="action_reprocess" type="object"
+                            string="Reprocess" class="btn-primary"
+                            invisible="sync_status == 'paired'"/>
+                    <button name="action_open_attendance" type="object"
+                            string="Open Attendance" class="btn-secondary"
+                            invisible="not attendance_id"/>
+                    <field name="sync_status" widget="statusbar"
+                           statusbar_visible="pending,paired,skipped,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="badge_code" placeholder="Badge"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="punch_time"/>
+                            <field name="inout"/>
+                            <field name="shift_code"/>
+                        </group>
+                        <group>
+                            <field name="machine_id"/>
+                            <field name="processed_at"/>
+                            <field name="attendance_id"/>
+                            <field name="exception_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Diagnostics" invisible="not error_message and not raw_payload">
+                        <field name="error_message" readonly="1"/>
+                        <field name="raw_payload" readonly="1" widget="text"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_starlink_sync_log_search" model="ir.ui.view">
+        <field name="name">starlink.sync.log.search</field>
+        <field name="model">starlink.sync.log</field>
+        <field name="arch" type="xml">
+            <search string="Sync Logs">
+                <field name="badge_code"/>
+                <field name="employee_id"/>
+                <field name="machine_id"/>
+                <filter name="status_pending" string="Pending"
+                        domain="[('sync_status', '=', 'pending')]"/>
+                <filter name="status_paired" string="Paired"
+                        domain="[('sync_status', '=', 'paired')]"/>
+                <filter name="status_skipped" string="Skipped"
+                        domain="[('sync_status', '=', 'skipped')]"/>
+                <filter name="status_error" string="Error"
+                        domain="[('sync_status', '=', 'error')]"/>
+                <separator/>
+                <filter name="inout_in" string="IN"
+                        domain="[('inout', '=', 'I')]"/>
+                <filter name="inout_out" string="OUT"
+                        domain="[('inout', '=', 'O')]"/>
+                <separator/>
+                <filter name="shift_p1" string="P1" domain="[('shift_code', '=', 'P1')]"/>
+                <filter name="shift_p2" string="P2" domain="[('shift_code', '=', 'P2')]"/>
+                <filter name="shift_p3" string="P3" domain="[('shift_code', '=', 'P3')]"/>
+                <filter name="shift_pg" string="PG" domain="[('shift_code', '=', 'PG')]"/>
+                <separator/>
+                <filter name="today" string="Today"
+                        domain="[('punch_time', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="last_7_days" string="Last 7 Days"
+                        domain="[('punch_time', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_status" string="Status"
+                            context="{'group_by': 'sync_status'}"/>
+                    <filter name="group_shift" string="Shift"
+                            context="{'group_by': 'shift_code'}"/>
+                    <filter name="group_inout" string="I/O"
+                            context="{'group_by': 'inout'}"/>
+                    <filter name="group_day" string="Day"
+                            context="{'group_by': 'punch_time:day'}"/>
+                    <filter name="group_company" string="Company" groups="base.group_multi_company"
+                            context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_starlink_sync_log_pivot" model="ir.ui.view">
+        <field name="name">starlink.sync.log.pivot</field>
+        <field name="model">starlink.sync.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Sync Logs" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="shift_code" type="col"/>
+                <field name="punch_time" type="col" interval="day"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_starlink_sync_log_graph" model="ir.ui.view">
+        <field name="name">starlink.sync.log.graph</field>
+        <field name="model">starlink.sync.log</field>
+        <field name="arch" type="xml">
+            <graph string="Sync Logs" type="line" sample="1">
+                <field name="punch_time" interval="day"/>
+                <field name="sync_status"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_starlink_sync_log" model="ir.actions.act_window">
+        <field name="name">Sync Logs</field>
+        <field name="res_model">starlink.sync.log</field>
+        <field name="view_mode">list,form,search,pivot,graph</field>
+        <field name="search_view_id" ref="view_starlink_sync_log_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No sync logs yet.</p>
+            <p>StarLink punches will appear here once ingestion starts.</p>
+        </field>
+    </record>
+
+</odoo>

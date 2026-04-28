@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_starlink" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.starlink</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="hr_attendance.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='hr_attendance']" position="inside">
+                <block title="StarLink Sync" name="starlink_attendance_sync_block">
+                    <setting id="starlink_sql_connection"
+                             string="SQL Server Connection"
+                             help="Optional internal puller — enable to fetch punches directly from MachineRawPunch.">
+                        <field name="starlink_enable_internal_puller"/>
+                        <div class="content-group" invisible="not starlink_enable_internal_puller">
+                            <div class="row mt-2">
+                                <label for="starlink_sql_host" class="col-lg-3 o_light_label"/>
+                                <field name="starlink_sql_host"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_sql_db" class="col-lg-3 o_light_label"/>
+                                <field name="starlink_sql_db"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_sql_user" class="col-lg-3 o_light_label"/>
+                                <field name="starlink_sql_user"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_sql_password" class="col-lg-3 o_light_label"/>
+                                <field name="starlink_sql_password" password="True"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_sql_driver" class="col-lg-3 o_light_label"/>
+                                <field name="starlink_sql_driver"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_tz_source" class="col-lg-3 o_light_label"/>
+                                <field name="starlink_tz_source"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="starlink_duration_caps"
+                             string="Shift Duration Caps (hours)"
+                             help="Maximum duration accepted between IN and OUT before raising a 'bad_duration' exception.">
+                        <div class="content-group">
+                            <div class="row">
+                                <label for="starlink_duration_max_p1" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_duration_max_p1"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_duration_max_p2" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_duration_max_p2"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_duration_max_p3" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_duration_max_p3"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_duration_max_pg" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_duration_max_pg"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_duration_max_default" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_duration_max_default"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_duration_min" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_duration_min"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="starlink_other"
+                             string="Reconciliation"
+                             help="Stale-checker and retro reconciliation tuning.">
+                        <div class="content-group">
+                            <div class="row">
+                                <label for="starlink_stale_open_hours" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_stale_open_hours"/>
+                            </div>
+                            <div class="row">
+                                <label for="starlink_retro_window_days" class="col-lg-4 o_light_label"/>
+                                <field name="starlink_retro_window_days"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
