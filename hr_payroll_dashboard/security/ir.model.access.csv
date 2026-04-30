@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_payroll_custom_dashboard_manager,hr.payroll.custom.dashboard manager,model_hr_payroll_custom_dashboard,hr_payroll.group_hr_payroll_manager,1,0,0,0
+access_hr_payroll_custom_dashboard_user,hr.payroll.custom.dashboard user,model_hr_payroll_custom_dashboard,hr_payroll.group_hr_payroll_user,1,0,0,0

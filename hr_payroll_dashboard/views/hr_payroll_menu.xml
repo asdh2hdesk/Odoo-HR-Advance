@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Standalone top-level menu for HR Payroll Dashboard.
+        Does NOT depend on hr_payroll.menu_hr_payroll_root so it works
+        whether or not the standard hr_payroll module is installed.
+    -->
+
+    <!-- Root menu entry (shows in the main app bar) -->
+    <menuitem
+        id="menu_hr_payroll_dashboard_root"
+        name="HR Dashboard"
+        sequence="80"
+        web_icon="hr_payroll_dashboard,static/description/icon.png"
+        groups="base.group_user"/>
+
+    <!-- Sub-menu pointing to the client action -->
+    <menuitem
+        id="menu_hr_payroll_custom_dashboard"
+        name="Dashboard"
+        parent="menu_hr_payroll_dashboard_root"
+        action="action_hr_payroll_custom_dashboard"
+        sequence="1"
+        groups="base.group_user"/>
+
+</odoo>

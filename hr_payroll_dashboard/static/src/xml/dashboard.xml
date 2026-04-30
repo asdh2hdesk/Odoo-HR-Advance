@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="hr_payroll_dashboard.HrPayrollDashboard">
+    <div class="hpd-root">
+
+      <!-- ── Header ── -->
+      <div class="hpd-header">
+        <div class="hpd-header-left">
+          <span class="hpd-logo-mark">⬡</span>
+          <div>
+            <h1 class="hpd-title">HR Payroll Dashboard</h1>
+            <p class="hpd-subtitle" t-esc="state.today"/>
+          </div>
+        </div>
+        <div class="hpd-header-right">
+          <div class="hpd-date-filter">
+            <label class="hpd-date-label">From</label>
+            <input type="date" class="hpd-date-input" t-att-value="state.dateFrom" t-on-change="onDateFromChange"/>
+            <label class="hpd-date-label">To</label>
+            <input type="date" class="hpd-date-input" t-att-value="state.dateTo" t-on-change="onDateToChange"/>
+            <button class="hpd-apply-btn" t-on-click="applyDateFilter">Apply</button>
+          </div>
+          <span class="hpd-month-badge" t-esc="state.month"/>
+          <button class="hpd-refresh-btn" t-on-click="loadData">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <t t-if="state.loading">
+        <div class="hpd-loading">
+          <div class="hpd-spinner"/>
+          <p>Loading dashboard data…</p>
+        </div>
+      </t>
+
+      <t t-else="">
+
+        <!-- ══ 1. Action Tiles ══ -->
+        <div class="hpd-action-tiles">
+          <div class="hpd-action-tile hpd-tile--orange" t-on-click="() => this.viewAll('payslips')">
+            <div class="hpd-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+              </svg>
+            </div>
+            <div class="hpd-tile-body">
+              <span class="hpd-tile-label">Payslips</span>
+              <span class="hpd-tile-val" t-esc="state.data.payslip_summary.total"/>
+            </div>
+          </div>
+
+          <div class="hpd-action-tile hpd-tile--purple" t-on-click="() => this.viewAll('contracts')">
+            <div class="hpd-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="hpd-tile-body">
+              <span class="hpd-tile-label">Contracts</span>
+              <span class="hpd-tile-val" t-esc="state.data.extra.contracts"/>
+            </div>
+          </div>
+
+          <div class="hpd-action-tile hpd-tile--blue" t-on-click="() => this.viewAll('employees')">
+            <div class="hpd-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+            </div>
+            <div class="hpd-tile-body">
+              <span class="hpd-tile-label">Total Employees</span>
+              <span class="hpd-tile-val" t-esc="state.data.extra.dept_total"/>
+            </div>
+          </div>
+
+          <div class="hpd-action-tile hpd-tile--teal" t-on-click="() => this.viewAll('departments')">
+            <div class="hpd-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+              </svg>
+            </div>
+            <div class="hpd-tile-body">
+              <span class="hpd-tile-label">Total Departments</span>
+              <span class="hpd-tile-val" t-esc="state.data.extra.dept_count"/>
+            </div>
+          </div>
+
+          <div class="hpd-action-tile hpd-tile--green" t-on-click="() => this.viewAll('employees')">
+            <div class="hpd-tile-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <div class="hpd-tile-body">
+              <span class="hpd-tile-label">New Joinees</span>
+              <span class="hpd-tile-val" t-esc="state.data.new_joinees.count"/>
+              <span class="hpd-kpi-sub">this month</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ 2. Salary / Attendance KPI Strip ══ -->
+        <div class="hpd-action-tiless">
+          <div class="hpd-kpi hpd-kpi--green">
+            <div class="hpd-kpi-icon">💵</div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">In Hand Salary</span>
+              <span class="hpd-kpi-value">
+                <t t-esc="state.data.salary_report.currency"/>
+                <t t-esc="formatAmount(state.data.salary_report.total_inhand)"/>
+              </span>
+              <span class="hpd-kpi-sub">this month</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--blue">
+            <div class="hpd-kpi-icon">💰</div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Net Payout</span>
+              <span class="hpd-kpi-value">
+                <t t-esc="state.data.salary_report.currency"/>
+                <t t-esc="formatAmount(state.data.salary_report.total_net)"/>
+              </span>
+              <span class="hpd-kpi-sub">this month</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--amber">
+            <div class="hpd-kpi-icon">🏦</div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">PF Contribution</span>
+              <span class="hpd-kpi-value">
+                <t t-esc="state.data.salary_report.currency"/>
+                <t t-esc="formatAmount(state.data.salary_report.total_pf)"/>
+              </span>
+              <span class="hpd-kpi-sub">this month</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--green">
+            <div class="hpd-kpi-icon">✅</div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Check-Ins Today</span>
+              <span class="hpd-kpi-value" t-esc="state.data.daily_attendance.present"/>
+              <span class="hpd-kpi-sub">of <t t-esc="state.data.daily_attendance.total"/> employees</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--blue">
+            <div class="hpd-kpi-icon">🚪</div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Check-Outs Today</span>
+              <span class="hpd-kpi-value" t-esc="state.data.daily_attendance.checked_out"/>
+              <span class="hpd-kpi-sub">completed</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--amber">
+            <div class="hpd-kpi-icon">⚠️</div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Missed Check-Out</span>
+              <span class="hpd-kpi-value" t-esc="state.data.daily_attendance.missed_out"/>
+              <span class="hpd-kpi-sub">still checked in</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ 3. Monthly Leave Chart ══ -->
+        <div class="hpd-chart-card hpd-chart-card--full">
+          <div class="hpd-chart-header">
+            <h3 class="hpd-chart-title">Monthly Leave Analysis</h3>
+            <span class="hpd-viewall-link" t-on-click="() => this.viewAll('leaves')">View All →</span>
+          </div>
+          <div class="hpd-canvas-wrap">
+            <canvas class="hpd-canvas" id="leaveChart" height="180"/>
+            <div class="hpd-tooltip" id="leaveTooltip"/>
+          </div>
+        </div>
+
+        <!-- ══ 4. Join/Resign + Attrition Charts ══ -->
+        <div class="hpd-two-charts">
+          <div class="hpd-chart-card">
+            <div class="hpd-chart-header">
+              <h3 class="hpd-chart-title">Monthly Join/Resign Analysis</h3>
+              <span class="hpd-viewall-link" t-on-click="() => this.viewAll('employees')">View All →</span>
+            </div>
+            <div class="hpd-canvas-wrap">
+              <canvas class="hpd-canvas" id="joinResignChart" height="180"/>
+              <div class="hpd-tooltip" id="joinResignTooltip"/>
+            </div>
+            <div class="hpd-spark-legend" style="margin-top:8px">
+              <span class="hpd-spark-leg"><span class="hpd-spark-dot" style="background:#14b8a6"/>Join</span>
+              <span class="hpd-spark-leg"><span class="hpd-spark-dot" style="background:#f97316"/>Resign</span>
+            </div>
+          </div>
+          <div class="hpd-card hpd-card--loan">
+            <div class="hpd-card-header">
+              <div class="hpd-card-title-group">
+                <span class="hpd-card-dot hpd-dot--red"/>
+                <h2 class="hpd-card-title">Loan Recovery</h2>
+              </div>
+            </div>
+            <t t-if="!state.data.loan_summary.available">
+              <div class="hpd-empty"><p>Salary Attachment module not installed.</p></div>
+            </t>
+            <t t-else="">
+              <div class="hpd-loan-cards">
+                <div class="hpd-loan-card hpd-loan-card--recover">
+                  <span class="hpd-loan-icon">↑</span>
+                  <span class="hpd-loan-amount">
+                    <t t-esc="state.data.loan_summary.currency"/>
+                    <t t-esc="formatAmount(state.data.loan_summary.total_to_recover)"/>
+                  </span>
+                  <span class="hpd-loan-label">To Be Recovered</span>
+                </div>
+                <div class="hpd-loan-card hpd-loan-card--recovered">
+                  <span class="hpd-loan-icon">✓</span>
+                  <span class="hpd-loan-amount">
+                    <t t-esc="state.data.loan_summary.currency"/>
+                    <t t-esc="formatAmount(state.data.loan_summary.total_recovered)"/>
+                  </span>
+                  <span class="hpd-loan-label">Already Recovered</span>
+                </div>
+              </div>
+            </t>
+          </div>
+
+<!--          <div class="hpd-chart-card">-->
+<!--            <div class="hpd-chart-header">-->
+<!--              <h3 class="hpd-chart-title">Attrition Rate</h3>-->
+<!--            </div>-->
+<!--            <div class="hpd-canvas-wrap">-->
+<!--              <canvas class="hpd-canvas" id="attritionChart" height="180"/>-->
+<!--              <div class="hpd-tooltip" id="attritionTooltip"/>-->
+<!--            </div>-->
+<!--          </div>-->
+        </div>
+
+        <!-- ══ 5. Birthdays / Events / Announcements ══ -->
+        <div class="hpd-info-row">
+          <div class="hpd-info-card">
+            <div class="hpd-info-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Upcoming Birthdays
+            </div>
+            <div class="hpd-info-body">
+              <t t-if="!(state.data.extra.birthdays and state.data.extra.birthdays.length)">
+                <div class="hpd-empty"><p>No upcoming birthdays.</p></div>
+              </t>
+              <t t-else="">
+                <t t-foreach="state.data.extra.birthdays" t-as="bday" t-key="bday.name">
+                  <div class="hpd-bday-row">
+                    <div class="hpd-bday-avatar" t-esc="bday.name.charAt(0)"/>
+                    <div class="hpd-bday-info">
+                      <span class="hpd-bday-name" t-esc="bday.name"/>
+                      <span class="hpd-bday-date" t-esc="bday.birthday"/>
+                    </div>
+                  </div>
+                </t>
+              </t>
+            </div>
+          </div>
+
+          <div class="hpd-info-card">
+            <div class="hpd-info-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Upcoming Events
+            </div>
+            <div class="hpd-info-body">
+              <t t-if="!(state.data.extra.events and state.data.extra.events.length)">
+                <div class="hpd-empty"><p>No upcoming events.</p></div>
+              </t>
+              <t t-else="">
+                <t t-foreach="state.data.extra.events" t-as="ev" t-key="ev.name">
+                  <div class="hpd-event-row">
+                    <div class="hpd-event-dot"/>
+                    <div class="hpd-event-info">
+                      <span class="hpd-event-name" t-esc="ev.name"/>
+                      <span class="hpd-event-date" t-esc="ev.date"/>
+                    </div>
+                  </div>
+                </t>
+              </t>
+            </div>
+          </div>
+
+          <div class="hpd-info-card">
+            <div class="hpd-info-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              Announcements
+            </div>
+            <div class="hpd-info-body">
+              <t t-if="!(state.data.extra.announcements and state.data.extra.announcements.length)">
+                <div class="hpd-empty"><p>No announcements.</p></div>
+              </t>
+              <t t-else="">
+                <t t-foreach="state.data.extra.announcements" t-as="ann" t-key="ann.title">
+                  <div class="hpd-ann-row">
+                    <span class="hpd-ann-title" t-esc="ann.title"/>
+                    <span class="hpd-ann-date" t-esc="ann.date"/>
+                  </div>
+                </t>
+              </t>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ 6. Present / Leaves / Loan KPI Strip ══ -->
+        <div class="hpd-kpi-strip">
+          <div class="hpd-kpi hpd-kpi--blue" t-on-click="() => this.viewAll('attendance')">
+            <div class="hpd-kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+            </div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Present Today</span>
+              <span class="hpd-kpi-value" t-esc="state.data.daily_attendance.present"/>
+              <span class="hpd-kpi-sub">of <t t-esc="state.data.daily_attendance.total"/> employees</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--amber" t-on-click="() => this.viewAll('leaves')">
+            <div class="hpd-kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Leaves Pending</span>
+              <span class="hpd-kpi-value" t-esc="state.data.leaves_for_approval.total_pending"/>
+              <span class="hpd-kpi-sub">awaiting approval</span>
+            </div>
+          </div>
+
+          <div class="hpd-kpi hpd-kpi--purple" t-on-click="() => this.viewAll('loans')">
+            <div class="hpd-kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="hpd-kpi-body">
+              <span class="hpd-kpi-label">Total Loan Given</span>
+              <span class="hpd-kpi-value">
+                <t t-esc="state.data.loan_summary.currency"/>
+                <t t-esc="formatAmount(state.data.loan_summary.total_given)"/>
+              </span>
+              <span class="hpd-kpi-sub"><t t-esc="state.data.loan_summary.active_loans"/> loans</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ 7. Detail Cards ══ -->
+        <div class="hpd-grid">
+
+          <div class="hpd-card hpd-card--attendance">
+            <div class="hpd-card-header">
+              <div class="hpd-card-title-group">
+                <span class="hpd-card-dot hpd-dot--blue"/>
+                <h2 class="hpd-card-title">Daily Attendance</h2>
+              </div>
+              <span class="hpd-tag" t-esc="state.data.daily_attendance.date"/>
+            </div>
+            <div class="hpd-attendance-ring-row">
+              <div class="hpd-donut-wrap">
+                <svg class="hpd-donut" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" class="hpd-donut-bg"/>
+                  <circle cx="60" cy="60" r="50" class="hpd-donut-present"
+                    t-att-stroke-dasharray="computeDonutPresent(state.data.daily_attendance)"
+                    stroke-dashoffset="0"/>
+                  <circle cx="60" cy="60" r="50" class="hpd-donut-leave"
+                    t-att-stroke-dasharray="computeDonutLeave(state.data.daily_attendance)"
+                    t-att-stroke-dashoffset="computeDonutLeaveOffset(state.data.daily_attendance)"/>
+                </svg>
+                <div class="hpd-donut-center">
+                  <span class="hpd-donut-pct" t-esc="computeAttPct(state.data.daily_attendance) + '%'"/>
+                  <span class="hpd-donut-lbl">Present</span>
+                </div>
+              </div>
+              <div class="hpd-att-stats">
+                <div class="hpd-att-stat">
+                  <span class="hpd-att-dot hpd-att-dot--green"/>
+                  <span class="hpd-att-num" t-esc="state.data.daily_attendance.present"/>
+                  <span class="hpd-att-lbl">Present</span>
+                </div>
+                <div class="hpd-att-stat">
+                  <span class="hpd-att-dot hpd-att-dot--red"/>
+                  <span class="hpd-att-num" t-esc="state.data.daily_attendance.absent"/>
+                  <span class="hpd-att-lbl">Absent</span>
+                </div>
+                <div class="hpd-att-stat">
+                  <span class="hpd-att-dot hpd-att-dot--amber"/>
+                  <span class="hpd-att-num" t-esc="state.data.daily_attendance.on_leave"/>
+                  <span class="hpd-att-lbl">On Leave</span>
+                </div>
+                <div class="hpd-att-stat">
+                  <span class="hpd-att-dot hpd-att-dot--blue"/>
+                  <span class="hpd-att-num" t-esc="state.data.daily_attendance.still_checked_in"/>
+                  <span class="hpd-att-lbl">Still In</span>
+                </div>
+              </div>
+            </div>
+            <div class="hpd-trend">
+              <p class="hpd-section-label">7-Day Trend</p>
+              <div class="hpd-bar-chart">
+                <t t-foreach="state.data.monthly_attendance_trend" t-as="day" t-key="day.day">
+                  <div class="hpd-bar-group">
+                    <div class="hpd-bar-stack">
+                      <div class="hpd-bar hpd-bar--present"
+                        t-att-style="'height:' + barHeight(day.present, state.data.daily_attendance.total) + 'px'"/>
+                      <div class="hpd-bar hpd-bar--absent"
+                        t-att-style="'height:' + barHeight(day.absent, state.data.daily_attendance.total) + 'px'"/>
+                    </div>
+                    <span class="hpd-bar-label" t-esc="day.day"/>
+                  </div>
+                </t>
+              </div>
+            </div>
+            <t t-if="state.data.daily_attendance.live_records and state.data.daily_attendance.live_records.length">
+              <p class="hpd-section-label" style="margin-top:16px">Currently Checked In</p>
+              <div class="hpd-live-table">
+                <div class="hpd-live-row hpd-live-row--head">
+                  <span>Employee</span><span>Dept</span><span>In</span><span>Hrs</span>
+                </div>
+                <t t-foreach="state.data.daily_attendance.live_records" t-as="r" t-key="r.employee">
+                  <div class="hpd-live-row">
+                    <span t-esc="r.employee"/>
+                    <span t-esc="r.department"/>
+                    <span t-esc="r.check_in"/>
+                    <span t-esc="r.worked_hours"/>
+                  </div>
+                </t>
+              </div>
+            </t>
+          </div>
+
+          <div class="hpd-card hpd-card--leaves">
+            <div class="hpd-card-header">
+              <div class="hpd-card-title-group">
+                <span class="hpd-card-dot hpd-dot--amber"/>
+                <h2 class="hpd-card-title">Leaves for Approval</h2>
+              </div>
+              <span class="hpd-badge hpd-badge--amber" t-esc="state.data.leaves_for_approval.total_pending + ' Pending'"/>
+            </div>
+            <div class="hpd-leave-type-pills">
+              <t t-foreach="state.data.leaves_for_approval.by_type" t-as="ltype" t-key="ltype.type">
+                <div class="hpd-leave-type-pill">
+                  <span t-esc="ltype.type"/>
+                  <span class="hpd-leave-type-count" t-esc="ltype.count"/>
+                </div>
+              </t>
+            </div>
+            <div class="hpd-scroll-table">
+              <table class="hpd-table">
+                <thead>
+                  <tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Stage</th></tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="state.data.leaves_for_approval.records" t-as="leave" t-key="leave.id">
+                    <tr>
+                      <td>
+                        <div class="hpd-emp-cell">
+                          <span class="hpd-avatar" t-esc="leave.employee.charAt(0)"/>
+                          <span t-esc="leave.employee"/>
+                        </div>
+                      </td>
+                      <td t-esc="leave.leave_type"/>
+                      <td t-esc="leave.date_from"/>
+                      <td t-esc="leave.date_to"/>
+                      <td t-esc="leave.days"/>
+                      <td><span class="hpd-badge hpd-badge--amber" t-esc="leave.state"/></td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /hpd-grid -->
+
+        <!-- ══ 8. Employees by Department ══ -->
+        <div class="hpd-dept-table-section">
+          <div class="hpd-card">
+            <div class="hpd-card-header">
+              <h2 class="hpd-card-title">Employees by Department</h2>
+            </div>
+            <div style="display:flex;gap:16px;padding:4px 0">
+              <table class="hpd-table" style="flex:1">
+                <thead><tr><th>#</th><th>Department</th><th>Employees</th></tr></thead>
+                <tbody>
+                  <t t-foreach="state.data.extra.dept_distribution" t-as="dept" t-key="dept.name">
+                    <t t-if="dept_index % 3 === 0">
+                      <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
+                    </t>
+                  </t>
+                </tbody>
+              </table>
+              <table class="hpd-table" style="flex:1">
+                <thead><tr><th>#</th><th>Department</th><th>Employees</th></tr></thead>
+                <tbody>
+                  <t t-foreach="state.data.extra.dept_distribution" t-as="dept" t-key="dept.name">
+                    <t t-if="dept_index % 3 === 1">
+                      <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
+                    </t>
+                  </t>
+                </tbody>
+              </table>
+              <table class="hpd-table" style="flex:1">
+                <thead><tr><th>#</th><th>Department</th><th>Employees</th></tr></thead>
+                <tbody>
+                  <t t-foreach="state.data.extra.dept_distribution" t-as="dept" t-key="dept.name">
+                    <t t-if="dept_index % 3 === 2">
+                      <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
+                    </t>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </t>
+    </div>
+  </t>
+
+</templates>
