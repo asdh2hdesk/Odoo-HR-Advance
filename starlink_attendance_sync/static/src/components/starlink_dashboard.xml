@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="starlink_attendance_sync.Dashboard">
+        <div class="o_starlink_dashboard p-3">
+            <div class="o_starlink_dashboard_header d-flex align-items-center justify-content-between mb-3">
+                <h2 class="m-0">StarLink Attendance Sync</h2>
+                <div class="o_starlink_actions">
+                    <button type="button" class="btn btn-primary me-2"
+                            t-on-click="onClickReprocess">
+                        <i class="fa fa-refresh me-1"/>Reprocess Exceptions
+                    </button>
+                    <button type="button" class="btn btn-secondary me-2"
+                            t-on-click="onClickReconcile">
+                        <i class="fa fa-history me-1"/>Reconcile Last 30 Days
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            t-on-click="onClickRetrySelected">
+                        <i class="fa fa-bug me-1"/>Retry Selected Exceptions
+                    </button>
+                </div>
+            </div>
+
+            <div t-if="state.loading" class="text-center text-muted py-5">
+                <i class="fa fa-spinner fa-spin fa-2x"/>
+                <p class="mt-2">Loading KPIs…</p>
+            </div>
+
+            <div t-else="" class="row g-3">
+                <!-- Exception KPI cards -->
+                <div class="col-md-4 col-lg col-12">
+                    <div class="o_starlink_card o_kpi_orphan_out"
+                         t-on-click="() => this.openExceptionFilter('orphan_out', false)">
+                        <div class="o_kpi_label">Orphan OUT</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.orphan_out"/>
+                        <div class="o_kpi_hint">unresolved</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg col-12">
+                    <div class="o_starlink_card o_kpi_duplicate_in"
+                         t-on-click="() => this.openExceptionFilter('duplicate_in', false)">
+                        <div class="o_kpi_label">Duplicate IN</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.duplicate_in"/>
+                        <div class="o_kpi_hint">unresolved</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg col-12">
+                    <div class="o_starlink_card o_kpi_bad_duration"
+                         t-on-click="() => this.openExceptionFilter('bad_duration', false)">
+                        <div class="o_kpi_label">Bad Duration</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.bad_duration"/>
+                        <div class="o_kpi_hint">unresolved</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg col-12">
+                    <div class="o_starlink_card o_kpi_resolved"
+                         t-on-click="() => this.openExceptionFilter(null, true)">
+                        <div class="o_kpi_label">Resolved</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.resolved"/>
+                        <div class="o_kpi_hint">all-time</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg col-12">
+                    <div class="o_starlink_card o_kpi_pending"
+                         t-on-click="() => this.openExceptionFilter(null, false)">
+                        <div class="o_kpi_label">Pending</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.pending"/>
+                        <div class="o_kpi_hint">unresolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <div t-if="!state.loading" class="row g-3 mt-3">
+                <div class="col-md-4">
+                    <div class="o_starlink_card o_kpi_minor o_kpi_unmapped"
+                         t-on-click="() => this.openExceptionFilter('employee_not_mapped', false)">
+                        <div class="o_kpi_label">Employee Not Mapped</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.employee_not_mapped"/>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="o_starlink_card o_kpi_minor o_kpi_missing_checkout"
+                         t-on-click="() => this.openExceptionFilter('missing_checkout', false)">
+                        <div class="o_kpi_label">Missing Checkout</div>
+                        <div class="o_kpi_value" t-esc="state.kpis.missing_checkout"/>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="o_starlink_card o_kpi_minor o_kpi_logs">
+                        <div class="o_kpi_label">Sync Logs (paired / total)</div>
+                        <div class="o_kpi_value">
+                            <t t-esc="state.kpis.logs_paired"/> / <t t-esc="state.kpis.logs_total"/>
+                        </div>
+                        <div class="o_kpi_hint">
+                            <t t-esc="state.kpis.logs_pending"/> pending
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

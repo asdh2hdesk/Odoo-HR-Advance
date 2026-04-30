@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="icp_starlink_duration_max_p1" model="ir.config_parameter">
+        <field name="key">starlink.duration_max_p1</field>
+        <field name="value">12</field>
+    </record>
+    <record id="icp_starlink_duration_max_p2" model="ir.config_parameter">
+        <field name="key">starlink.duration_max_p2</field>
+        <field name="value">12</field>
+    </record>
+    <record id="icp_starlink_duration_max_p3" model="ir.config_parameter">
+        <field name="key">starlink.duration_max_p3</field>
+        <field name="value">16</field>
+    </record>
+    <record id="icp_starlink_duration_max_pg" model="ir.config_parameter">
+        <field name="key">starlink.duration_max_pg</field>
+        <field name="value">12</field>
+    </record>
+    <record id="icp_starlink_duration_max_default" model="ir.config_parameter">
+        <field name="key">starlink.duration_max_default</field>
+        <field name="value">26</field>
+    </record>
+    <record id="icp_starlink_duration_min" model="ir.config_parameter">
+        <field name="key">starlink.duration_min</field>
+        <field name="value">0</field>
+    </record>
+    <record id="icp_starlink_stale_open_hours" model="ir.config_parameter">
+        <field name="key">starlink.stale_open_hours</field>
+        <field name="value">18</field>
+    </record>
+    <record id="icp_starlink_retro_window_days" model="ir.config_parameter">
+        <field name="key">starlink.retro_window_days</field>
+        <field name="value">7</field>
+    </record>
+    <record id="icp_starlink_tz_source" model="ir.config_parameter">
+        <field name="key">starlink.tz_source</field>
+        <field name="value">Asia/Kolkata</field>
+    </record>
+    <record id="icp_starlink_enable_internal_puller" model="ir.config_parameter">
+        <field name="key">starlink.enable_internal_puller</field>
+        <field name="value">False</field>
+    </record>
+
+</odoo>

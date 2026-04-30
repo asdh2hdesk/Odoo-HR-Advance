@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_starlink_sync_log_user,starlink.sync.log.user,model_starlink_sync_log,group_starlink_user,1,0,0,0
+access_starlink_sync_log_manager,starlink.sync.log.manager,model_starlink_sync_log,group_starlink_manager,1,1,1,1
+access_starlink_punch_exception_user,starlink.punch.exception.user,model_starlink_punch_exception,group_starlink_user,1,1,0,0
+access_starlink_punch_exception_manager,starlink.punch.exception.manager,model_starlink_punch_exception,group_starlink_manager,1,1,1,1
+access_starlink_sync_checkpoint_user,starlink.sync.checkpoint.user,model_starlink_sync_checkpoint,group_starlink_user,1,0,0,0
+access_starlink_sync_checkpoint_manager,starlink.sync.checkpoint.manager,model_starlink_sync_checkpoint,group_starlink_manager,1,1,1,1
+access_starlink_reconcile_wizard_user,starlink.reconcile.wizard.user,model_starlink_reconcile_wizard,group_starlink_user,1,1,1,1
+access_starlink_reconcile_wizard_manager,starlink.reconcile.wizard.manager,model_starlink_reconcile_wizard,group_starlink_manager,1,1,1,1

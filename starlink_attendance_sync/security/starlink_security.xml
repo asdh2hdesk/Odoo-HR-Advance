@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+
+    <record id="module_category_starlink" model="ir.module.category">
+        <field name="name">StarLink Attendance Sync</field>
+        <field name="description">Manage permissions for the StarLink biometric attendance integration.</field>
+        <field name="sequence">25</field>
+    </record>
+
+    <record id="group_starlink_user" model="res.groups">
+        <field name="name">StarLink: User</field>
+        <field name="category_id" ref="module_category_starlink"/>
+        <field name="implied_ids" eval="[(4, ref('hr_attendance.group_hr_attendance_officer'))]"/>
+        <field name="comment">Read access to StarLink sync logs, exceptions, and the dashboard.</field>
+    </record>
+
+    <record id="group_starlink_manager" model="res.groups">
+        <field name="name">StarLink: Manager</field>
+        <field name="category_id" ref="module_category_starlink"/>
+        <field name="implied_ids" eval="[(4, ref('group_starlink_user')), (4, ref('hr_attendance.group_hr_attendance_manager'))]"/>
+        <field name="comment">Full CRUD on StarLink models, can resolve exceptions and run reconciliation.</field>
+    </record>
+
+    <!-- Multi-company record rules -->
+    <record id="rule_starlink_sync_log_company" model="ir.rule">
+        <field name="name">StarLink Sync Log: multi-company</field>
+        <field name="model_id" ref="model_starlink_sync_log"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <record id="rule_starlink_punch_exception_company" model="ir.rule">
+        <field name="name">StarLink Punch Exception: multi-company</field>
+        <field name="model_id" ref="model_starlink_punch_exception"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <record id="rule_starlink_sync_checkpoint_company" model="ir.rule">
+        <field name="name">StarLink Sync Checkpoint: multi-company</field>
+        <field name="model_id" ref="model_starlink_sync_checkpoint"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+</odoo>
