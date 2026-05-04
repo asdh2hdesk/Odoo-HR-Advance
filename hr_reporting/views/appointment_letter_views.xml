@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_contract_view_form_appointment_letter" model="ir.ui.view">
+        <field name="name">hr.contract.form.appointment.letter</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_generate_appointment_letter"
+                        string="Generate Appointment Letter"
+                        type="object"
+                        class="btn-primary"/>
+            </xpath>
+
+            <xpath expr="//sheet" position="inside">
+                <group string="Appointment Letter">
+                    <group>
+                        <field name="appointment_letter_ref" readonly="1"/>
+                        <field name="appointment_letter_date"/>
+                        <field name="application_date"/>
+                    </group>
+                    <group>
+                        <field name="appointment_letter_attachment_id" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -15,10 +15,13 @@
     'hr_employee_activity_calendar',
     "report_xlsx",
     'payroll_salary_link',
+    'contract_salary_config',
     ],
 
     "data": [
         'security/ir.model.access.csv',
+        'data/appointment_letter_sequence.xml',
+        'views/appointment_letter_views.xml',
         'views/resignation_letter_views.xml',
         'report/resignation_action.xml',
         'report/resignation_report.xml',

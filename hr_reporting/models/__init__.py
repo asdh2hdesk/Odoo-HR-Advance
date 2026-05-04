@@ -15,3 +15,4 @@ from . import hr_salary_attachment_excel
 from . import hr_custom_form_staff_loan
 from . import labour_colony_agreement
 from . import nomination_form
+from . import appointment_letter
