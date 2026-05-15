@@ -18,6 +18,7 @@ class HrCaste(models.Model):
 
 class Employee(models.Model):
     _inherit = 'hr.employee'
+    _order = "employee_code, id"
 
     joining_date = fields.Date(
         compute='_compute_joining_date',
