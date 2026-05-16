@@ -61,18 +61,18 @@ export class StarlinkDashboard extends Component {
     }
 
     async onClickReprocess() {
-        await this.orm.call("starlink.sync.engine", "_cron_live_refresh", []);
+        // Public wrapper — _cron_live_refresh would be blocked by the
+        // remote-call security check on private methods.
+        await this.orm.call(
+            "starlink.sync.engine",
+            "action_run_live_refresh",
+            []
+        );
         this.notification.add(_t("Reprocess complete."), { type: "success" });
         await this.loadKpis();
     }
 
     async onClickReconcile() {
-        const action = await this.orm.call(
-            "ir.actions.act_window",
-            "search_read",
-            [[["res_model", "=", "starlink.reconcile.wizard"]], ["id"]],
-            { limit: 1 }
-        );
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Reconcile Last 30 Days"),
@@ -84,6 +84,8 @@ export class StarlinkDashboard extends Component {
     }
 
     async onClickRetrySelected() {
+        // Open the exception list filtered to unresolved so the user can
+        // tick rows and use the Retry button.
         await this.openExceptionFilter(false, false);
     }
 }

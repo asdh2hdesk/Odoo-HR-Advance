@@ -150,6 +150,14 @@ class StarlinkPunchException(models.Model):
             'name': _('StarLink Exceptions'),
             'res_model': 'starlink.punch.exception',
             'view_mode': 'list,form,pivot,graph',
+            # The views array is required by Odoo 18's web client; without it
+            # _preprocessAction crashes on `views.map()`.
+            'views': [
+                (False, 'list'),
+                (False, 'form'),
+                (False, 'pivot'),
+                (False, 'graph'),
+            ],
             'domain': domain,
             'target': 'current',
         }

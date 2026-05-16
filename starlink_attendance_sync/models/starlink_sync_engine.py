@@ -365,3 +365,26 @@ class StarlinkSyncEngine(models.AbstractModel):
         for company in self.env['res.company'].search([]):
             self._check_stale_open_attendance(company=company)
         return True
+
+    # ------------------------------------------------------------------
+    # Public action wrappers (callable from JS / buttons).
+    # Methods prefixed with `_` are blocked by Odoo's RPC layer for
+    # security; the dashboard calls these public ones instead.
+    # ------------------------------------------------------------------
+    @api.model
+    def action_run_live_refresh(self):
+        """Public entry-point for 'Reprocess Exceptions' on the dashboard."""
+        self._cron_live_refresh()
+        return True
+
+    @api.model
+    def action_run_nightly_reconcile(self):
+        """Public entry-point to manually trigger the nightly retro pass."""
+        self._cron_nightly_reconcile()
+        return True
+
+    @api.model
+    def action_run_stale_check(self):
+        """Public entry-point to manually trigger the stale-open scan."""
+        self._cron_stale_check()
+        return True
