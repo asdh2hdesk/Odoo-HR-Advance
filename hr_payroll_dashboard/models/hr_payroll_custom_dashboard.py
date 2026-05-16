@@ -669,6 +669,7 @@ class HrPayrollCustomDashboard(models.Model):
         still_in = len(checked_in_today.filtered(lambda a: not a.check_out)
                        .mapped('employee_id'))
 
+
         # On approved leave today — filter by employee company (hr.leave has company_id)
         on_leave = 0  # unused
         leaves_today = self.env['hr.leave'].search_count([
