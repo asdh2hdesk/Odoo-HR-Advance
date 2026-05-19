@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="user_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
             </list>
         </field>
     </record>
@@ -21,6 +22,7 @@
                 <sheet>
                     <group>
                         <field name="user_id"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
                     </group>
                 </sheet>
             </form>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="cft_member_company_rule" model="ir.rule">
+        <field name="name">CFT Member: multi-company</field>
+        <field name="model_id" ref="model_cft_member"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="cft_approval_company_rule" model="ir.rule">
+        <field name="name">CFT Approval: multi-company</field>
+        <field name="model_id" ref="model_cft_approval"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- Tighten the stock hr.job rule so jobs without a company are NOT visible to everyone. -->
+    <record id="hr.hr_job_comp_rule" model="ir.rule">
+        <field name="name">Job Position: strict multi-company</field>
+        <field name="model_id" ref="hr.model_hr_job"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- Tighten the stock hr.applicant rule for the same reason. -->
+    <record id="hr_recruitment.hr_applicant_comp_rule" model="ir.rule">
+        <field name="name">Applicant: strict multi-company</field>
+        <field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+</odoo>

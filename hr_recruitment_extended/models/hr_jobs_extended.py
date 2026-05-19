@@ -72,7 +72,9 @@ class Job(models.Model):
             vals['state'] = 'draft'  # Default if not specified
         # Assign CFT members for non-budgeted jobs if not provided
         if not vals.get('budgeted', False) and 'cft_member_ids' not in vals:
-            cft_members = self.env['cft.member'].search([]).mapped('user_id')
+            cft_members = self.env['cft.member'].search([
+                ('company_id', '=', self.env.company.id),
+            ]).mapped('user_id')
             if cft_members:
                 vals['cft_member_ids'] = [(6, 0, cft_members.ids)]
         return super(Job, self).create(vals)
@@ -85,7 +87,9 @@ class Job(models.Model):
             for record in self:
                 # If budgeted is False and cft_member_ids is empty, assign default CFT members
                 if not record.budgeted and not record.cft_member_ids:
-                    cft_members = self.env['cft.member'].search([]).mapped('user_id')
+                    cft_members = self.env['cft.member'].search([
+                ('company_id', '=', self.env.company.id),
+            ]).mapped('user_id')
                     if cft_members:
                         record.write({'cft_member_ids': [(6, 0, cft_members.ids)]})
         return res
@@ -96,7 +100,9 @@ class Job(models.Model):
         for job in self:
             if not job.budgeted:
                 # Fetch users from cft.member model
-                cft_members = self.env['cft.member'].search([]).mapped('user_id')
+                cft_members = self.env['cft.member'].search([
+                ('company_id', '=', self.env.company.id),
+            ]).mapped('user_id')
                 job.cft_member_ids = [(6, 0, cft_members.ids)]
                 
     @api.depends('cft_approval_ids', 'cft_approval_ids.status')

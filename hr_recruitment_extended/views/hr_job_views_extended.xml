@@ -164,4 +164,20 @@
     </record>
     
 
+    <!-- Remove company_id from searchpanel to enforce strict company filtering based on UI user context -->
+    <record id="view_job_filter_recruitment_extended" model="ir.ui.view">
+        <field name="name">hr.job.filter.recruitment.extended</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_job_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//searchpanel/field[@name='company_id']" position="replace">
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Enforce active company domain strictly at the UI layer so Administrators do not bypass it -->
+    <record id="hr_recruitment.action_hr_job" model="ir.actions.act_window">
+        <field name="domain">[('company_id', 'in', allowed_company_ids)]</field>
+    </record>
+
 </odoo>

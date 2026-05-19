@@ -16,6 +16,7 @@
         'data/mail_template.xml',
         "data/hr_recruitment_data.xml",
         "security/ir.model.access.csv",
+        "security/recruitment_security.xml",
         "views/cft_approval_views.xml",
         "views/cft_members_views.xml",
         "views/hr_job_views_extended.xml",
