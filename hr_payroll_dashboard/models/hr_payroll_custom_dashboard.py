@@ -126,7 +126,7 @@ class HrPayrollCustomDashboard(models.Model):
             m_start = month_start - relativedelta(months=i)
             m_end = (m_start + relativedelta(months=1)) - timedelta(days=1)
             count = Leave.search_count([
-                ('state', '=', 'validate'),
+                ('state', 'not in', ['refuse', 'cancel']),
                 ('date_from', '>=', m_start),
                 ('date_from', '<=', m_end),
                 ('employee_id.company_id', 'in', company_ids),
@@ -168,12 +168,12 @@ class HrPayrollCustomDashboard(models.Model):
         leave_today = Leave.search_count([
             ('date_from', '<=', datetime.combine(today, datetime.max.time())),
             ('date_to', '>=', datetime.combine(today, datetime.min.time())),
-            ('state', '=', 'validate'),
+            ('state', 'not in', ['refuse', 'cancel']),
             ('employee_id.company_id', 'in', company_ids),
         ])
         leave_month = Leave.search_count([
             ('date_from', '>=', month_start),
-            ('state', '=', 'validate'),
+            ('state', 'not in', ['refuse', 'cancel']),
             ('employee_id.company_id', 'in', company_ids),
         ])
 
@@ -212,7 +212,7 @@ class HrPayrollCustomDashboard(models.Model):
             SELECT TO_CHAR(date_from, 'Mon') AS month,
                    COUNT(*) AS total
             FROM hr_leave
-            WHERE state = 'validate'
+            WHERE state NOT IN ('refuse', 'cancel')
               AND date_from >= NOW() - INTERVAL '6 months'
               AND company_id IN %s
             GROUP BY TO_CHAR(date_from, 'Mon'), DATE_TRUNC('month', date_from)
@@ -668,6 +668,7 @@ class HrPayrollCustomDashboard(models.Model):
         # Still checked in (no checkout yet)
         still_in = len(checked_in_today.filtered(lambda a: not a.check_out)
                        .mapped('employee_id'))
+
 
         # On approved leave today — filter by employee company (hr.leave has company_id)
         on_leave = 0  # unused
