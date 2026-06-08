@@ -28,14 +28,19 @@ class Employee(models.Model):
     )
     
     join_date = fields.Date(string='Join Date', store=True)
+
+    selection_date = fields.Date(string='Selection Date', store=True)
     father_name = fields.Char(string='Father Name')
-    caste_id = fields.Many2one("hr.caste", string="Caste")
+    caste_id = fields.Many2one("hr.caste", string="Religion")
     age = fields.Integer(
         string='Age',
         compute='_compute_age',
         store=True,
         help="Employee age computed from date of birth"
     )
+    height = fields.Float(string='Height (CM)')
+    weight = fields.Float(string='Weight (KG)')
+    blood_group = fields.Char(string='Blood Group')
 
     @api.depends('birthday')
     def _compute_age(self):

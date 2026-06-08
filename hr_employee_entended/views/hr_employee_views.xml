@@ -19,16 +19,108 @@ if records:
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
+             <xpath expr="//field[@name='job_id']" position="attributes">
+                <attribute name="string">Designation</attribute>
+            </xpath>
+            <xpath expr="//field[@name='coach_id']" position="attributes">
+                <attribute name="string">In-Charge</attribute>
+            </xpath>
+            <xpath expr="//field[@name='job_title']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='mobile_phone']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
 
             <xpath expr="//sheet//field[@name='company_id']" position="after">
-                <field name="resource_calendar_id" string="Working Shift" readonly="0"/>
-                <field name="contract_id" readonly="0"/>
-                <field name="first_contract_date" readonly="0" />
-                <field name="joining_date" readonly="0" />
-                <field name="join_date" readonly="0" invisible="1" />
                 <field name="father_name"/>
-                <field name="caste_id"/>
+
+
+            </xpath>
+              <xpath expr="//sheet//field[@name='coach_id']" position="after">
+                <field name="blood_group"/>
+
+
+            </xpath>
+             <xpath expr="//sheet//field[@name='birthday']" position="after">
                 <field name="age" readonly="0"/>
+                <field name="caste_id"/>
+
+
+            </xpath>
+             <xpath expr="//sheet//field[@name='private_car_plate']" position="after">
+                <field name="height"/>
+                <field name="weight"/>
+
+
+            </xpath>
+             <xpath expr="//field[@name='identification_id']" position="attributes">
+                <attribute name="string">Aadhar No</attribute>
+            </xpath>
+            <xpath expr="//field[@name='ssnid']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='passport_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='place_of_birth']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='country_of_birth']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='distance_home_work']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[@name='div_km_home_work']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='children']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//separator[@name='has_work_permit']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='visa_no']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='permit_no']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='visa_expire']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='work_permit_expiration_date']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='work_permit_name']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='has_work_permit']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+             <xpath expr="//page[@name='public']//group[@name='managers']" position="after">
+
+                <group string="Contract">
+
+                    <field name="resource_calendar_id" string="Working Shift"/>
+
+                    <field name="contract_id"/>
+
+                    <field name="first_contract_date"/>
+
+                    <field name="joining_date"/>
+                    <field name="selection_date"/>
+
+                </group>
+
             </xpath>
 
             <xpath expr="//page[@name='hr_settings']" position="after">
@@ -85,6 +177,47 @@ if records:
         </field>
     </record>
 
+<record id="view_res_bank_form_inherit_ifsc" model="ir.ui.view">
+        <field name="name">res.bank.form.inherit.ifsc</field>
+        <field name="model">res.bank</field>
+        <field name="inherit_id" ref="base.view_res_bank_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='bic']" position="attributes">
+                <attribute name="string">IFSC Code</attribute>
+            </xpath>
+
+        </field>
+    </record>
+    <record id="view_employee_tree_adding_imp_fields" model="ir.ui.view">
+        <field name="name">hr.employee.tree.inherit.for.adding.important.fields</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <!-- <xpath expr="//list" position="attributes">
+                <attribute name="editable">top</attribute>
+            </xpath> -->
+
+            <xpath expr="//list/field[@name='activity_ids']" position="replace">
+                <field name="activity_ids" widget="list_activity" optional="hide"/>
+            </xpath>
+            <xpath expr="//list/field[@name='job_id']" position="attributes">
+                <attribute name="string">Designation</attribute>
+            </xpath>
+
+            <xpath expr="//list/field[@name='coach_id']" position="attributes">
+                <attribute name="string">In-Charge</attribute>
+            </xpath>
+
+
+            <!-- Add new fields -->
+            <xpath expr="//list/field[@name='work_email']" position="after">
+                <field name="employee_code"/>
+                <field name="blood_group"/>
+            </xpath>
+
+        </field>
+    </record>
 
     <record id="view_employee_tree_adding_imp_fields" model="ir.ui.view">
         <field name="name">hr.employee.tree.inherit.for.adding.important.fields</field>
