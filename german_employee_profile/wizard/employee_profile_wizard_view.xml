@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wizard Form View -->
+    <record id="view_employee_profile_wizard_form" model="ir.ui.view">
+        <field name="name">employee.profile.wizard.form</field>
+        <field name="model">employee.profile.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Employee Profile">
+                <group>
+                    <field name="employee_id" readonly="docx_file"/>
+                </group>
+                <group invisible="not docx_file">
+                    <field name="docx_file" filename="file_name" widget="binary" string="Download DOCX"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_generate_docx"
+                            string="Generate Profile DOCX"
+                            type="object"
+                            class="btn-primary"
+                            invisible="docx_file"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Add button to Employee form view via inherited view -->
+    <record id="view_employee_form_profile_button" model="ir.ui.view">
+        <field name="name">hr.employee.form.profile.docx.button</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_download_profile_docx"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-word-o"
+                        string="Print Profile"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
