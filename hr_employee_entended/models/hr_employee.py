@@ -28,9 +28,11 @@ class Employee(models.Model):
     )
     
     join_date = fields.Date(string='Join Date', store=True)
+    last_working_date = fields.Date(string='Last Working Date', store=True, copy=False, help="Date the employee resigned or was archived.")
 
     selection_date = fields.Date(string='Selection Date', store=True)
     father_name = fields.Char(string='Father Name')
+    mother_name = fields.Char(string='Mother Name')
     caste_id = fields.Many2one("hr.caste", string="Religion")
     age = fields.Integer(
         string='Age',
@@ -97,6 +99,13 @@ class Employee(models.Model):
 
     def write(self, vals):
         """Override write to synchronize resource_calendar_id with open contracts."""
+        if 'active' in vals:
+            if not vals['active'] and 'last_working_date' not in vals:
+                # Use departure_date if available in vals, else today
+                vals['last_working_date'] = vals.get('departure_date', fields.Date.context_today(self))
+            elif vals['active']:
+                vals['last_working_date'] = False
+        
         # Skip synchronization if already in a contract-employee update loop
         if self.env.context.get('skip_contract_calendar_sync'):
             return super(Employee, self).write(vals)

@@ -9,8 +9,8 @@
         <field name="binding_view_types">list</field>
         <field name="state">code</field>
         <field name="code">
-if records:
-    action = records.action_generate_barcodes_bulk()
+            if records:
+            action = records.action_generate_barcodes_bulk()
         </field>
     </record>
 
@@ -19,7 +19,7 @@ if records:
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-             <xpath expr="//field[@name='job_id']" position="attributes">
+            <xpath expr="//field[@name='job_id']" position="attributes">
                 <attribute name="string">Designation</attribute>
             </xpath>
             <xpath expr="//field[@name='coach_id']" position="attributes">
@@ -34,27 +34,28 @@ if records:
 
             <xpath expr="//sheet//field[@name='company_id']" position="after">
                 <field name="father_name"/>
-
+                <field name="mother_name"/>
+                <field name="join_date"/>
 
             </xpath>
-              <xpath expr="//sheet//field[@name='coach_id']" position="after">
+            <xpath expr="//sheet//field[@name='coach_id']" position="after">
                 <field name="blood_group"/>
 
 
             </xpath>
-             <xpath expr="//sheet//field[@name='birthday']" position="after">
+            <xpath expr="//sheet//field[@name='birthday']" position="after">
                 <field name="age" readonly="0"/>
                 <field name="caste_id"/>
 
 
             </xpath>
-             <xpath expr="//sheet//field[@name='private_car_plate']" position="after">
+            <xpath expr="//sheet//field[@name='private_car_plate']" position="after">
                 <field name="height"/>
                 <field name="weight"/>
 
 
             </xpath>
-             <xpath expr="//field[@name='identification_id']" position="attributes">
+            <xpath expr="//field[@name='identification_id']" position="attributes">
                 <attribute name="string">Aadhar No</attribute>
             </xpath>
             <xpath expr="//field[@name='ssnid']" position="attributes">
@@ -106,7 +107,7 @@ if records:
                 <attribute name="invisible">1</attribute>
             </xpath>
 
-             <xpath expr="//page[@name='public']//group[@name='managers']" position="after">
+            <xpath expr="//page[@name='public']//group[@name='managers']" position="after">
 
                 <group string="Contract">
 
@@ -117,6 +118,7 @@ if records:
                     <field name="first_contract_date"/>
 
                     <field name="joining_date"/>
+                    <field name="last_working_date" invisible="not last_working_date"/>
                     <field name="selection_date"/>
 
                 </group>
@@ -154,21 +156,22 @@ if records:
                         </group>
                         <group>
                         </group>
-                            <field name="overtime_ids" widget="section_one2many"/>
+                        <field name="overtime_ids" widget="section_one2many"/>
 
-                            <field name="attendance_ids" widget="section_one2many"/>
+                        <field name="attendance_ids" widget="section_one2many"/>
 
-                            <field name="contract_ids" widget="section_one2many"/>
+                        <field name="contract_ids" widget="section_one2many"/>
 
-                            <field name="candidate_id" widget="section_one2many"/>
+                        <field name="candidate_id" widget="section_one2many"/>
 
                     </group>
                 </page>
             </xpath>
-            
+
             <xpath expr="//page[@name='public']//group[4]" position="replace">
-                <group string="Schedule" name="group_schedule" >
-                    <field name="resource_calendar_id" help="The default working hours are set in configuration." invisible="1"/>
+                <group string="Schedule" name="group_schedule">
+                    <field name="resource_calendar_id" help="The default working hours are set in configuration."
+                           invisible="1"/>
                     <field name="id" invisible="1"/>
                     <field name="tz" required="id"/>
                 </group>
@@ -177,7 +180,7 @@ if records:
         </field>
     </record>
 
-<record id="view_res_bank_form_inherit_ifsc" model="ir.ui.view">
+    <record id="view_res_bank_form_inherit_ifsc" model="ir.ui.view">
         <field name="name">res.bank.form.inherit.ifsc</field>
         <field name="model">res.bank</field>
         <field name="inherit_id" ref="base.view_res_bank_form"/>
@@ -242,25 +245,25 @@ if records:
         <field name="arch" type="xml">
 
             <xpath expr="//field[@name='attendance_manager_id']" position="after">
-                <field name="resource_calendar_id" string="Working Shift" readonly="0" optional="show" />
+                <field name="resource_calendar_id" string="Working Shift" readonly="0" optional="show"/>
                 <!-- to delete later maybe  below -->
-                    <field name="last_attendance_worked_hours" readonly="0" invisible="0" optional="hide"/>
-                    <field name="last_attendance_id" readonly="0" invisible="0" optional="hide"/>
-                    <field name="leave_manager_id" readonly="0" invisible="0" optional="hide"/>
-                    <field name="attendance_state" readonly="0" invisible="0" optional="hide"/>
-                    <field name="total_overtime" readonly="0" invisible="0" optional="hide"/>
-                    <field name="allocations_count" readonly="0" invisible="0" optional="hide"/>
-                    <field name="allocation_count" readonly="0" invisible="0" optional="hide"/>
-                    <field name="leaves_count" readonly="0" invisible="0" optional="hide"/>
-                    <field name="remaining_leaves" readonly="0" invisible="0" optional="hide"/>
-                    <field name="last_attendance_worked_hours" readonly="0" invisible="0" optional="hide"/>
-                    <field name="hours_previously_today" readonly="0" invisible="0" optional="hide"/>
-                    <field name="hours_last_month" readonly="0" invisible="0" optional="hide"/>
+                <field name="last_attendance_worked_hours" readonly="0" invisible="0" optional="hide"/>
+                <field name="last_attendance_id" readonly="0" invisible="0" optional="hide"/>
+                <field name="leave_manager_id" readonly="0" invisible="0" optional="hide"/>
+                <field name="attendance_state" readonly="0" invisible="0" optional="hide"/>
+                <field name="total_overtime" readonly="0" invisible="0" optional="hide"/>
+                <field name="allocations_count" readonly="0" invisible="0" optional="hide"/>
+                <field name="allocation_count" readonly="0" invisible="0" optional="hide"/>
+                <field name="leaves_count" readonly="0" invisible="0" optional="hide"/>
+                <field name="remaining_leaves" readonly="0" invisible="0" optional="hide"/>
+                <field name="last_attendance_worked_hours" readonly="0" invisible="0" optional="hide"/>
+                <field name="hours_previously_today" readonly="0" invisible="0" optional="hide"/>
+                <field name="hours_last_month" readonly="0" invisible="0" optional="hide"/>
 
-                    <field name="contracts_count" readonly="0" invisible="0" optional="hide"/>
-                    <!-- <field name="payslip_count" readonly="0" invisible="0" optional="hide"/> -->
-                    <field name="related_partners_count" readonly="0" invisible="0" optional="hide"/>
-                    <field name="child_all_count" readonly="0" invisible="0" optional="hide"/>
+                <field name="contracts_count" readonly="0" invisible="0" optional="hide"/>
+                <!-- <field name="payslip_count" readonly="0" invisible="0" optional="hide"/> -->
+                <field name="related_partners_count" readonly="0" invisible="0" optional="hide"/>
+                <field name="child_all_count" readonly="0" invisible="0" optional="hide"/>
                 <!-- to delete later maybe  above -->
 
 

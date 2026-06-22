@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.hr.rejoin</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='employee_rights_setting_container']" position="after">
+                <block title="Rejoining Employees" name="rejoining_employees_setting_container">
+                    <setting string="Rejoining Tracking" help="Use the Rejoining Employee tracking system">
+                        <field name="enable_rejoining_employee_tracking"/>
+                    </setting>
+                    
+                    <setting string="Auto Copy Documents" help="Automatically duplicate documents to the new employee record"
+                        invisible="not enable_rejoining_employee_tracking">
+                        <field name="copy_employee_documents"/>
+                    </setting>
+
+                    <setting string="Auto Copy Skills" help="Automatically copy previous skills"
+                        invisible="not enable_rejoining_employee_tracking">
+                        <field name="copy_employee_skills"/>
+                    </setting>
+
+                    <setting string="Auto Copy Education" help="Automatically copy previous education history"
+                        invisible="not enable_rejoining_employee_tracking">
+                        <field name="copy_employee_education"/>
+                    </setting>
+
+                    <setting string="Auto Generate Employee Code" help="Generate the new Employee Code from sequence"
+                        invisible="not enable_rejoining_employee_tracking">
+                        <field name="auto_generate_employee_code"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

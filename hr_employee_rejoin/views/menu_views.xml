@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_hr_employee_rejoin_root" 
+              name="Rejoining Employees" 
+              parent="hr.menu_hr_root" 
+              sequence="4"/>
+              
+    <menuitem id="menu_hr_employee_rejoin_history"
+              name="Rejoining History"
+              parent="menu_hr_employee_rejoin_root"
+              action="action_hr_employee_rejoin_history"
+              sequence="10"/>
+
+    <menuitem id="menu_hr_employee_rejoin_wizard"
+              name="Rejoin an Employee"
+              parent="menu_hr_employee_rejoin_root"
+              action="action_hr_employee_rejoin_wizard"
+              sequence="20"/>
+</odoo>

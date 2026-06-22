@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_hr_employee_rejoin_history_tree" model="ir.ui.view">
+        <field name="name">hr.employee.rejoin.history.tree</field>
+        <field name="model">hr.employee.rejoin.history</field>
+        <field name="arch" type="xml">
+            <list string="Rejoining History" create="0" edit="0" delete="0">
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="old_employee_code"/>
+                <field name="new_employee_code"/>
+                <field name="previous_join_date"/>
+                <field name="previous_exit_date"/>
+                <field name="rejoin_date"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_hr_employee_rejoin_history_search" model="ir.ui.view">
+        <field name="name">hr.employee.rejoin.history.search</field>
+        <field name="model">hr.employee.rejoin.history</field>
+        <field name="arch" type="xml">
+            <search string="Search Rejoining History">
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="old_employee_code"/>
+                <field name="new_employee_code"/>
+                
+                <filter string="This Month" name="this_month" domain="[('rejoin_date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                <filter string="This Year" name="this_year" domain="[('rejoin_date', '&gt;=', context_today().strftime('%Y-01-01'))]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Department" name="group_by_department" context="{'group_by':'department_id'}"/>
+                    <filter string="Company" name="group_by_company" context="{'group_by':'company_id'}" groups="base.group_multi_company"/>
+                    <filter string="Year" name="group_by_year" context="{'group_by':'rejoin_date:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_hr_employee_rejoin_history" model="ir.actions.act_window">
+        <field name="name">Rejoining Employees</field>
+        <field name="res_model">hr.employee.rejoin.history</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_employee_rejoin_history_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No rejoining history found.
+            </p>
+        </field>
+    </record>
+</odoo>

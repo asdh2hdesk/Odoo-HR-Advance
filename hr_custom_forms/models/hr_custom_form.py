@@ -217,6 +217,39 @@ class HrCustomFormD(models.Model):
             else:
                 record.company_address = False
 
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        super()._onchange_company_id()
+        for record in self:
+            if record.company_id:
+                employees = self.env['hr.employee'].search([('company_id', '=', record.company_id.id)])
+                record.total_workers = len(employees)
+                
+                from collections import defaultdict
+                job_counts = defaultdict(lambda: {'men': 0, 'women': 0, 'basic': 0.0})
+                for emp in employees:
+                    job_id = emp.job_id.id if emp.job_id else False
+                    contract = emp.contract_id if hasattr(emp, 'contract_id') else False
+                    wage = contract.wage if contract else 0.0
+                    
+                    if emp.gender == 'male':
+                        job_counts[job_id]['men'] += 1
+                    else:
+                        job_counts[job_id]['women'] += 1
+                    job_counts[job_id]['basic'] += wage
+                
+                lines = [(5, 0, 0)] # clear existing
+                for job, counts in job_counts.items():
+                    total_people = counts['men'] + counts['women']
+                    avg_basic = counts['basic'] / total_people if total_people > 0 else 0.0
+                    lines.append((0, 0, {
+                        'category_id': job,
+                        'men_employed': counts['men'],
+                        'women_employed': counts['women'],
+                        'basic_wages': avg_basic,
+                    }))
+                record.line_ids = lines
+
 
 class HrCustomFormMinimumWageNotice(models.Model):
     _name = "hr.custom.form.mw_notice"
@@ -311,6 +344,24 @@ class HrCustomFormTwo(models.Model):
             vals["permanent_address"] = employee.private_street
         if not vals.get("temporary_address") and employee.address_id:
             vals["temporary_address"] = employee.address_id._display_address()
+        if hasattr(employee, "bank_account_id") and employee.bank_account_id:
+            if not vals.get("account_number"):
+                vals["account_number"] = employee.bank_account_id.acc_number or False
+        if not vals.get("spouse_name"):
+            spouse = employee.family_ids.filtered(lambda f: f.relation == 'spouse')
+            vals["spouse_name"] = employee.spouse_complete_name if hasattr(employee, 'spouse_complete_name') and employee.spouse_complete_name else (spouse[0].name if spouse else False)
+        
+        if vals.get("employee_id") and not vals.get("part_b_family_line_ids"):
+            family_lines = []
+            for idx, member in enumerate(employee.family_ids, start=1):
+                family_lines.append((0, 0, {
+                    'sequence': idx,
+                    'member_name': member.name,
+                    'relationship': dict(member._fields['relation'].selection).get(member.relation, member.relation),
+                    'address': member.address or '',
+                }))
+            if family_lines:
+                vals["part_b_family_line_ids"] = family_lines
 
     @api.onchange("employee_id")
     def _onchange_employee_id(self):
@@ -328,6 +379,22 @@ class HrCustomFormTwo(models.Model):
                 record.permanent_address = employee.private_street
             if employee.address_id:
                 record.temporary_address = employee.address_id._display_address()
+            if hasattr(employee, "bank_account_id") and employee.bank_account_id:
+                record.account_number = employee.bank_account_id.acc_number or False
+            
+            spouse = employee.family_ids.filtered(lambda f: f.relation == 'spouse')
+            record.spouse_name = employee.spouse_complete_name if hasattr(employee, 'spouse_complete_name') and employee.spouse_complete_name else (spouse[0].name if spouse else False)
+            
+            # Populate family lines
+            lines = [(5, 0, 0)]
+            for idx, member in enumerate(employee.family_ids, start=1):
+                lines.append((0, 0, {
+                    'sequence': idx,
+                    'member_name': member.name,
+                    'relationship': dict(member._fields['relation'].selection).get(member.relation, member.relation),
+                    'address': member.address or '',
+                }))
+            record.part_b_family_line_ids = lines
 
 
 class HrCustomFormEleven(models.Model):
@@ -395,6 +462,23 @@ class HrCustomFormEleven(models.Model):
             vals["present_joining_date"] = employee.joining_date or employee.join_date or False
         if not vals.get("aadhaar_number"):
             vals["aadhaar_number"] = employee.identification_id or False
+        if not vals.get("pan_number"):
+            if hasattr(employee, 'pan') and employee.pan:
+                vals["pan_number"] = employee.pan
+            elif hasattr(employee, 'l10n_in_pan') and employee.l10n_in_pan:
+                vals["pan_number"] = employee.l10n_in_pan
+            else:
+                vals["pan_number"] = False
+            
+        if not vals.get("spouse_name"):
+            spouse = employee.family_ids.filtered(lambda f: f.relation == 'spouse')
+            vals["spouse_name"] = employee.spouse_complete_name if hasattr(employee, 'spouse_complete_name') and employee.spouse_complete_name else (spouse[0].name if spouse else False)
+
+        if hasattr(employee, "bank_account_id") and employee.bank_account_id:
+            if not vals.get("bank_account_no"):
+                vals["bank_account_no"] = employee.bank_account_id.acc_number or False
+            if not vals.get("bank_ifsc") and employee.bank_account_id.bank_id and hasattr(employee.bank_account_id.bank_id, 'bic'):
+                vals["bank_ifsc"] = employee.bank_account_id.bank_id.bic or False
 
     @api.onchange("employee_id")
     def _onchange_employee_id(self):
@@ -410,6 +494,19 @@ class HrCustomFormEleven(models.Model):
             record.mobile = employee.mobile_phone or employee.work_phone or False
             record.present_joining_date = employee.joining_date or employee.join_date or False
             record.aadhaar_number = employee.identification_id or False
+            if hasattr(employee, 'pan') and employee.pan:
+                record.pan_number = employee.pan
+            elif hasattr(employee, 'l10n_in_pan') and employee.l10n_in_pan:
+                record.pan_number = employee.l10n_in_pan
+            else:
+                record.pan_number = False
+                
+            spouse = employee.family_ids.filtered(lambda f: f.relation == 'spouse')
+            record.spouse_name = employee.spouse_complete_name if hasattr(employee, 'spouse_complete_name') and employee.spouse_complete_name else (spouse[0].name if spouse else False)
+            if hasattr(employee, "bank_account_id") and employee.bank_account_id:
+                record.bank_account_no = employee.bank_account_id.acc_number or False
+                if employee.bank_account_id.bank_id and hasattr(employee.bank_account_id.bank_id, 'bic'):
+                    record.bank_ifsc = employee.bank_account_id.bank_id.bic or False
 
 
 class HrCustomFormFifteenG(models.Model):
@@ -457,6 +554,57 @@ class HrCustomFormFifteenG(models.Model):
     payer_income_amount = fields.Float(string="Amount of income paid")
     declaration_received_date = fields.Date(string="Declaration Received On")
     income_paid_date = fields.Date(string="Income Paid / Credited On")
+
+    def _prepare_employee_related_vals(self, vals):
+        super()._prepare_employee_related_vals(vals)
+        employee_id = vals.get("employee_id")
+        if not employee_id:
+            return
+        employee = self.env["hr.employee"].browse(employee_id)
+        if not employee:
+            return
+        if not vals.get("assessee_name"):
+            vals["assessee_name"] = employee.name or False
+        if not vals.get("assessee_pan"):
+            if hasattr(employee, 'pan') and employee.pan:
+                vals["assessee_pan"] = employee.pan
+            elif hasattr(employee, 'l10n_in_pan') and employee.l10n_in_pan:
+                vals["assessee_pan"] = employee.l10n_in_pan
+            else:
+                vals["assessee_pan"] = False
+        if not vals.get("contact_email"):
+            vals["contact_email"] = employee.work_email or employee.private_email or False
+        if not vals.get("contact_phone"):
+            vals["contact_phone"] = employee.mobile_phone or employee.work_phone or False
+        if employee.address_id:
+            if not vals.get("address_city"):
+                vals["address_city"] = employee.address_id.city or False
+            if not vals.get("address_state") and employee.address_id.state_id:
+                vals["address_state"] = employee.address_id.state_id.name or False
+            if not vals.get("address_pin"):
+                vals["address_pin"] = employee.address_id.zip or False
+
+    @api.onchange("employee_id")
+    def _onchange_employee_id(self):
+        super()._onchange_employee_id()
+        for record in self:
+            employee = record.employee_id
+            if not employee:
+                continue
+            record.assessee_name = employee.name or False
+            if hasattr(employee, 'pan') and employee.pan:
+                record.assessee_pan = employee.pan
+            elif hasattr(employee, 'l10n_in_pan') and employee.l10n_in_pan:
+                record.assessee_pan = employee.l10n_in_pan
+            else:
+                record.assessee_pan = False
+            record.contact_email = employee.work_email or employee.private_email or False
+            record.contact_phone = employee.mobile_phone or employee.work_phone or False
+            if employee.address_id:
+                record.address_city = employee.address_id.city or False
+                if employee.address_id.state_id:
+                    record.address_state = employee.address_id.state_id.name or False
+                record.address_pin = employee.address_id.zip or False
 
 
 class HrCustomFormLeaveApplication(models.Model):
@@ -763,6 +911,19 @@ class HrCustomFormEsicDeclaration(models.Model):
                 vals["esic_bank_account_no"] = employee.bank_account_id.acc_number or False
             if not vals.get("esic_bank_name") and employee.bank_account_id.bank_id:
                 vals["esic_bank_name"] = employee.bank_account_id.bank_id.name or False
+            if not vals.get("esic_bank_ifsc") and employee.bank_account_id.bank_id and hasattr(employee.bank_account_id.bank_id, 'bic'):
+                vals["esic_bank_ifsc"] = employee.bank_account_id.bank_id.bic or False
+                
+        if vals.get("employee_id") and not vals.get("family_line_ids"):
+            family_lines = []
+            for idx, member in enumerate(employee.family_ids, start=1):
+                family_lines.append((0, 0, {
+                    'sequence': idx,
+                    'family_member_name': member.name,
+                    'relation': dict(member._fields['relation'].selection).get(member.relation, member.relation),
+                }))
+            if family_lines:
+                vals["family_line_ids"] = family_lines
 
     @api.onchange("employee_id")
     def _onchange_employee_id(self):
@@ -786,6 +947,18 @@ class HrCustomFormEsicDeclaration(models.Model):
                 record.esic_bank_account_no = employee.bank_account_id.acc_number or False
                 if employee.bank_account_id.bank_id:
                     record.esic_bank_name = employee.bank_account_id.bank_id.name or False
+                    if hasattr(employee.bank_account_id.bank_id, 'bic'):
+                        record.esic_bank_ifsc = employee.bank_account_id.bank_id.bic or False
+                        
+            # Populate ESIC family lines
+            lines = [(5, 0, 0)]
+            for idx, member in enumerate(employee.family_ids, start=1):
+                lines.append((0, 0, {
+                    'sequence': idx,
+                    'family_member_name': member.name,
+                    'relation': dict(member._fields['relation'].selection).get(member.relation, member.relation),
+                }))
+            record.family_line_ids = lines
 
 
 class HrCustomFormEsicFamilyLine(models.Model):
@@ -891,6 +1064,15 @@ class HrCustomFormPfLine(models.Model):
             record.mobile_number = employee.mobile_phone or employee.work_phone or False
             if hasattr(employee, "identification_id"):
                 record.aadhaar_number = employee.identification_id or False
+            if hasattr(employee, "pan") and employee.pan:
+                record.pan_number = employee.pan
+            elif hasattr(employee, "l10n_in_pan") and employee.l10n_in_pan:
+                record.pan_number = employee.l10n_in_pan
+            else:
+                record.pan_number = False
+                
+            if hasattr(employee, "uan"):
+                record.old_uan_no = employee.uan or False
 
 
 class HrRelationship(models.Model):

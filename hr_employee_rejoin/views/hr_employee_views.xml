@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_rejoin_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.rejoin.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_rejoining_history" type="object" class="oe_stat_button" icon="fa-history"
+                        invisible="rejoin_history_count == 0">
+                    <field name="rejoin_history_count" widget="statinfo" string="Rejoin History"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//notebook/page[@name='hr_settings']//group[@name='active_group']" position="after">
+                <group string="Rejoining Employee Information">
+                    <field name="is_rejoining_employee"/>
+                    <field name="previous_employee_id" 
+                           invisible="not is_rejoining_employee"
+                           required="is_rejoining_employee"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

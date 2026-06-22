@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_rejoin_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.rejoin.wizard.form</field>
+        <field name="model">hr.employee.rejoin.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rejoin Employee">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Rejoining Employee Process</h1>
+                    </div>
+                    <group>
+                        <group string="Step 1: Search Employee">
+                            <field name="search_keyword" placeholder="e.g. EMP001, John Doe..."/>
+                            <field name="previous_employee_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="rejoin_date"/>
+                        </group>
+                        
+                        <group string="Step 2: Preview Details" invisible="not previous_employee_id">
+                            <field name="name"/>
+                            <field name="old_employee_code"/>
+                            <field name="l10n_in_pan"/>
+                            <field name="identification_id"/>
+                            <field name="department_id"/>
+                            <field name="job_id"/>
+                            <field name="previous_join_date"/>
+                            <field name="previous_exit_date"/>
+                        </group>
+                    </group>
+                    
+                    <footer>
+                        <button string="Create New Employee" type="object" name="action_create_rejoining_employee" class="btn-primary" invisible="not previous_employee_id"/>
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_rejoin_wizard" model="ir.actions.act_window">
+        <field name="name">Rejoin Employee Wizard</field>
+        <field name="res_model">hr.employee.rejoin.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

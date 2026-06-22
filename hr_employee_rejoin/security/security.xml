@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Basic security is handled by standard HR groups:
+         hr.group_hr_user (Officer) 
+         hr.group_hr_manager (Manager)
+         We will use these existing groups for our models via ir.model.access.csv
+    -->
+    <data noupdate="1">
+        <!-- Rejoining History Record Rules -->
+        <record id="hr_employee_rejoin_history_comp_rule" model="ir.rule">
+            <field name="name">Employee Rejoining History multi company rule</field>
+            <field name="model_id" ref="model_hr_employee_rejoin_history"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>
