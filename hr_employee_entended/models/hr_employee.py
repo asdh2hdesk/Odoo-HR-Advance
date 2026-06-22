@@ -43,6 +43,7 @@ class Employee(models.Model):
     height = fields.Float(string='Height (CM)')
     weight = fields.Float(string='Weight (KG)')
     blood_group = fields.Char(string='Blood Group')
+    country_id = fields.Many2one('res.country', string='Country', default=lambda self: self.env.company.country_id)
 
     @api.depends('birthday')
     def _compute_age(self):
