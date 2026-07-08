@@ -162,6 +162,7 @@ class Employee(models.Model):
 
 class Contract(models.Model):
     _inherit = 'hr.contract'
+    _order = "employee_code, id"
 
     father_name = fields.Char(string='Father Name', related='employee_id.father_name', store=True)
     employee_code = fields.Char(string='Employee Code', related='employee_id.employee_code', store=True)

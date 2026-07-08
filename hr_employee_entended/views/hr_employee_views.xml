@@ -283,4 +283,16 @@
         </field>
     </record>
 
+    <!-- Inherit Contract List View to show employee code -->
+    <record id="hr_contract_view_tree_inherit_employee_code" model="ir.ui.view">
+        <field name="name">hr.contract.view.tree.inherit.employee.code</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="employee_code" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

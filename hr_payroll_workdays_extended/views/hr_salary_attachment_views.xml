@@ -9,14 +9,193 @@
             <xpath expr="//sheet" position="inside">
                 <notebook>
                     <page string="Attachment Lines" name="attachment_lines">
-                        <field name="attachment_line_ids">
-                            <list editable="bottom">
-                                <field name="sequence" widget="handle"/>
-                                <field name="attachment_type_id"/>
-                                <field name="amount"/>
-                                <field name="currency_id" column_invisible="1"/>
-                            </list>
-                        </field>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12">
+                                <field name="attachment_line_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="attachment_type_id"/>
+                                        <field name="amount"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </div>
+
+                        </div>
+                    </page>
+                    <page string="Reference">
+                        <div class="col-lg-12 col-md-12 ps-lg-4">
+                                <div class="card p-3 shadow-sm bg-light" style="max-height: 600px; overflow-y: auto;">
+                                    <h4 class="text-primary mb-3" style="color: #875A7B !important;">Salary Attachment Example</h4>
+
+                                    <h5 class="mt-2 mb-2">Employee Information</h5>
+                                    <table class="table table-bordered table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Field</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Employee</td>
+                                                <td>John Doe</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Description</td>
+                                                <td>Employee Loan</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Type</td>
+                                                <td>Attachment of Salary</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Start Date</td>
+                                                <td>01-Jan-2026</td>
+                                            </tr>
+                                            <tr>
+                                                <td>No End Date</td>
+                                                <td>No</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Payslip Amount</td>
+                                                <td>₹10,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total Amount</td>
+                                                <td>₹1,20,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Occurrences</td>
+                                                <td>12 Payslips</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Status</td>
+                                                <td>Running</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <h5 class="mt-3 mb-2">Attachment Lines</h5>
+                                    <p class="text-muted small">
+                                        The employee's monthly deduction of <strong>₹10,000</strong> is divided into multiple components.
+                                        These components are stored in <strong>Attachment Lines</strong>.
+                                    </p>
+                                    <table class="table table-bordered table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Line</th>
+                                                <th>Description</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Loan Principal</td>
+                                                <td>₹8,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>Loan Interest</td>
+                                                <td>₹1,500</td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td>Processing Fee</td>
+                                                <td>₹500</td>
+                                            </tr>
+                                            <tr class="fw-bold bg-200">
+                                                <td colspan="2">Total Monthly Deduction</td>
+                                                <td>₹10,000</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <h5 class="mt-3 mb-2">Payslip Calculation</h5>
+                                    <table class="table table-bordered table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Gross Salary</td>
+                                                <td>₹60,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Salary Attachment Deduction</td>
+                                                <td>- ₹10,000</td>
+                                            </tr>
+                                            <tr class="fw-bold">
+                                                <td>Net Salary</td>
+                                                <td>₹50,000</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <h5 class="mt-3 mb-2">What Happens Every Month?</h5>
+                                    <table class="table table-bordered table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Month</th>
+                                                <th>Deducted</th>
+                                                <th>Remaining Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>January</td>
+                                                <td>₹10,000</td>
+                                                <td>₹1,10,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>February</td>
+                                                <td>₹10,000</td>
+                                                <td>₹1,00,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>March</td>
+                                                <td>₹10,000</td>
+                                                <td>₹90,000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>...</td>
+                                                <td>...</td>
+                                                <td>...</td>
+                                            </tr>
+                                            <tr>
+                                                <td>December</td>
+                                                <td>₹10,000</td>
+                                                <td>₹0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div class="alert alert-success mt-3 small">
+                                        <strong>Result:</strong><br/>
+                                        After the 12th payslip:
+                                        <ul class="mb-0">
+                                            <li>Paid Amount = ₹1,20,000</li>
+                                            <li>Remaining Amount = ₹0</li>
+                                            <li>Status changes from <strong>Running</strong> to <strong>Completed</strong>.</li>
+                                            <li>No further deductions will appear on future payslips.</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="alert alert-info mt-3 small" style="border-left: 5px solid orange; background-color: #fff8dc;">
+                                        <strong style="color: #333;">Purpose of Attachment Lines</strong>
+                                        <ul class="mb-0 text-dark">
+                                            <li>Provide a detailed breakdown of one salary attachment.</li>
+                                            <li>Help HR understand how the monthly deduction is calculated.</li>
+                                            <li>Improve reporting and auditing.</li>
+                                            <li>The payroll usually deducts the total <strong>Payslip Amount (₹10,000)</strong>, while the attachment lines simply explain its composition.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                     </page>
                 </notebook>
             </xpath>
