@@ -55,7 +55,7 @@ def _set_cell_width(cell, inches):
     tc_w.set(qn("w:type"), "dxa")
 
 
-def _set_text(cell, text, *, bold=False, size=8, align=WD_ALIGN_PARAGRAPH.LEFT):
+def _set_text(cell, text, *, bold=False, size=9, align=WD_ALIGN_PARAGRAPH.LEFT):
     cell.text = ""
     paragraph = cell.paragraphs[0]
     paragraph.alignment = align
@@ -73,7 +73,7 @@ def _format_cell(
     text,
     *,
     bold=False,
-    size=8,
+    size=9,
     align=WD_ALIGN_PARAGRAPH.LEFT,
     fill=None,
     border=True,
@@ -99,7 +99,7 @@ def _section_heading(table, row_index, title):
         merged,
         title,
         bold=True,
-        size=9,
+        size=10,
         align=WD_ALIGN_PARAGRAPH.CENTER,
         fill=HEADER_FILL,
     )
@@ -212,10 +212,10 @@ def _build_personal_table(doc, data):
     ]
     row_idx = 2
     for sr_no, label, value in merged_rows:
-        _format_cell(table.cell(row_idx, 0), sr_no, align=WD_ALIGN_PARAGRAPH.CENTER, size=7.5)
-        _format_cell(table.cell(row_idx, 1), label, size=7.5)
+        _format_cell(table.cell(row_idx, 0), sr_no, align=WD_ALIGN_PARAGRAPH.CENTER, size=8.5)
+        _format_cell(table.cell(row_idx, 1), label, size=8.5)
         merged = table.cell(row_idx, 2).merge(table.cell(row_idx, 5))
-        _format_cell(merged, value, size=7.5)
+        _format_cell(merged, value, size=8.5)
         row_idx += 1
 
     dual_rows = [
@@ -228,12 +228,12 @@ def _build_personal_table(doc, data):
     ]
     for values in dual_rows:
         sr_l, part_l, detail_l, sr_r, part_r, detail_r = values
-        _format_cell(table.cell(row_idx, 0), sr_l, align=WD_ALIGN_PARAGRAPH.CENTER, size=7.5)
-        _format_cell(table.cell(row_idx, 1), part_l, size=7.5)
-        _format_cell(table.cell(row_idx, 2), detail_l, size=7.5)
-        _format_cell(table.cell(row_idx, 3), sr_r, align=WD_ALIGN_PARAGRAPH.CENTER, size=7.5)
-        _format_cell(table.cell(row_idx, 4), part_r, size=7.5)
-        _format_cell(table.cell(row_idx, 5), detail_r, size=7.5)
+        _format_cell(table.cell(row_idx, 0), sr_l, align=WD_ALIGN_PARAGRAPH.CENTER, size=8.5)
+        _format_cell(table.cell(row_idx, 1), part_l, size=8.5)
+        _format_cell(table.cell(row_idx, 2), detail_l, size=8.5)
+        _format_cell(table.cell(row_idx, 3), sr_r, align=WD_ALIGN_PARAGRAPH.CENTER, size=8.5)
+        _format_cell(table.cell(row_idx, 4), part_r, size=8.5)
+        _format_cell(table.cell(row_idx, 5), detail_r, size=8.5)
         row_idx += 1
     return table
 
@@ -255,7 +255,7 @@ def _build_simple_table(doc, title, headers, rows, widths, centered_cols=None):
             bold=True,
             fill=HEADER_FILL,
             align=WD_ALIGN_PARAGRAPH.CENTER,
-            size=8,
+            size=9,
         )
 
     for row_idx, row_values in enumerate(rows, start=2):
@@ -263,7 +263,7 @@ def _build_simple_table(doc, title, headers, rows, widths, centered_cols=None):
             _format_cell(
                 table.cell(row_idx, col_idx),
                 value,
-                size=7.5,
+                size=8.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER if col_idx in centered_cols else WD_ALIGN_PARAGRAPH.LEFT,
             )
     return table
@@ -279,13 +279,13 @@ def _build_salary_table(doc, data):
             _set_cell_width(row.cells[idx], width)
 
     _format_cell(table.cell(0, 0), "LAST SALARY", bold=True, fill=HEADER_FILL)
-    _format_cell(table.cell(0, 1), data["last_salary"], size=7.5)
+    _format_cell(table.cell(0, 1), data["last_salary"], size=8.5)
     _format_cell(table.cell(0, 2), "EXPECTED SALARY", bold=True, fill=HEADER_FILL)
-    _format_cell(table.cell(0, 3), data["expected_salary"], size=7.5)
+    _format_cell(table.cell(0, 3), data["expected_salary"], size=8.5)
 
     _format_cell(table.cell(1, 0), "JOB SKILL", bold=True, fill=HEADER_FILL)
     merged = table.cell(1, 1).merge(table.cell(1, 3))
-    _format_cell(merged, data["job_skill"], size=7.5)
+    _format_cell(merged, data["job_skill"], size=8.5)
     return table
 
 
@@ -318,9 +318,9 @@ def _build_interview_table(doc, data):
         ("REFERENCE", data["reference"]),
     ]
     for idx, (label, value) in enumerate(rows, start=1):
-        _format_cell(table.cell(idx, 0), label, bold=True, fill=HEADER_FILL, size=7.5)
-        _format_cell(table.cell(idx, 1), value, size=7.5)
-        _format_cell(table.cell(idx, 2), "", size=7.5)
+        _format_cell(table.cell(idx, 0), label, bold=True, fill=HEADER_FILL, size=8.5)
+        _format_cell(table.cell(idx, 1), value, size=8.5)
+        _format_cell(table.cell(idx, 2), "", size=8.5)
     return table
 
 
@@ -339,7 +339,7 @@ def _build_signature_table(doc):
             table.cell(0, idx),
             value,
             bold=True,
-            size=9,
+            size=10,
             align=WD_ALIGN_PARAGRAPH.CENTER,
             border=False,
         )
@@ -347,7 +347,7 @@ def _build_signature_table(doc):
             table.cell(1, idx),
             "SIGNATURE",
             bold=True,
-            size=8,
+            size=9,
             align=WD_ALIGN_PARAGRAPH.CENTER,
             border=False,
         )
@@ -406,6 +406,7 @@ def build_employee_profile_docx(data):
         centered_cols={0, 3, 4},
     )
     _add_spacer(doc, 4)
+    doc.add_page_break()
     _build_simple_table(
         doc,
         "FAMILY CONTACT DETAILS",
@@ -419,7 +420,7 @@ def build_employee_profile_docx(data):
         doc,
         "EMERGENCY CONTACT DETAILS",
         ["NAME", "CONTACT NO.", "RELATION", "ADDRESS"],
-        [[data["emergency"]["name"], data["emergency"]["contact"], data["emergency"]["relation"], data["emergency"]["address"]]],
+        [[c["name"], c["contact"], c["relation"], c["address"]] for c in data["emergency"]],
         [1.9, 1.9, 1.9, 1.9],
         centered_cols={1, 2},
     )

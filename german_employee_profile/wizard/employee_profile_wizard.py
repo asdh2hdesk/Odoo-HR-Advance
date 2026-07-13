@@ -2,7 +2,7 @@
 import base64
 from urllib.parse import quote
 
-from odoo import models, fields, _
+from odoo import models, fields, tools, _
 from odoo.exceptions import UserError
 from .docx_generator import build_employee_profile_docx
 
@@ -108,8 +108,26 @@ class EmployeeProfileWizard(models.TransientModel):
         def val(v):
             return v if v else '#N/A'
 
-        # Qualification lines from hr.resume.line (education)
+        # Qualification lines from hr.employee main fields
         qualifications = []
+        exam_str = ''
+        if emp.certificate:
+            exam_str += dict(emp._fields['certificate'].selection).get(emp.certificate, emp.certificate)
+        if emp.study_field:
+            if exam_str:
+                exam_str += f" - {emp.study_field}"
+            else:
+                exam_str = emp.study_field
+
+        if exam_str or getattr(emp, 'year_of_passing', False) or emp.study_school:
+            qualifications.append({
+                'exam': val(exam_str),
+                'year': val(getattr(emp, 'year_of_passing', '')),
+                'board': val(emp.study_school),
+                'percentage': '#N/A',
+            })
+
+        # Append from hr.resume.line as well
         resume_lines = emp.resume_line_ids.filtered(
             lambda r: r.line_type_id.name in ('Education', 'education', 'Qualification')
         )
@@ -136,7 +154,7 @@ class EmployeeProfileWizard(models.TransientModel):
                 period += f' - {line.date_end.year}'
             experiences.append({
                 'company': val(line.name),
-                'designation': val(line.description),
+                'designation': val(tools.html2plaintext(line.description) if line.description else ''),
                 'period': val(period),
                 'reason': '-',
             })
@@ -150,12 +168,20 @@ class EmployeeProfileWizard(models.TransientModel):
         ]
 
         # Emergency contact
-        emergency = {
-            'name': val(emp.emergency_contact),
-            'contact': val(emp.emergency_phone),
-            'relation': '#N/A',
-            'address': '#N/A',
-        }
+        emergency = [
+            {
+                'name': val(emp.emergency_contact),
+                'contact': val(emp.emergency_phone),
+                'relation': val(emp.sudo().l10n_in_relationship if hasattr(emp.sudo(), 'l10n_in_relationship') and emp.sudo().l10n_in_relationship else '#N/A'),
+                'address': val(emp.sudo().emergency_address if hasattr(emp.sudo(), 'emergency_address') and emp.sudo().emergency_address else '#N/A'),
+            },
+            {
+                'name': val(emp.sudo().emergency_contact2 if hasattr(emp.sudo(), 'emergency_contact2') and emp.sudo().emergency_contact2 else '#N/A'),
+                'contact': val(emp.sudo().emergency_phone2 if hasattr(emp.sudo(), 'emergency_phone2') and emp.sudo().emergency_phone2 else '#N/A'),
+                'relation': val(emp.sudo().emergency_relation2 if hasattr(emp.sudo(), 'emergency_relation2') and emp.sudo().emergency_relation2 else '#N/A'),
+                'address': val(emp.sudo().emergency_address2 if hasattr(emp.sudo(), 'emergency_address2') and emp.sudo().emergency_address2 else '#N/A'),
+            }
+        ]
         emp_sudo = emp.sudo()
         joining_date = self._get_first_field_value(
             emp_sudo,
@@ -180,11 +206,11 @@ class EmployeeProfileWizard(models.TransientModel):
         )
 
         data = {
-            'employee_code': val(emp.barcode or emp.employee_id),
-            'date': val(self._format_date(fields.Date.today())),
+            'employee_code': val(emp_sudo.employee_code if hasattr(emp_sudo, 'employee_code') else emp.barcode or emp.employee_id),
+            'date': val(self._format_date(joining_date)),
             'department': val(emp.department_id.name if emp.department_id else ''),
             'post': val(emp.job_id.name if emp.job_id else ''),
-            'blood_group': val(emp_sudo.blood_type if hasattr(emp_sudo, 'blood_type') else ''),
+            'blood_group': val(emp_sudo.blood_group if hasattr(emp_sudo, 'blood_group') and emp_sudo.blood_group else (emp_sudo.blood_type if hasattr(emp_sudo, 'blood_type') else '')),
             'employee_photo': (
                 getattr(emp_sudo, 'image_1920', False)
                 or getattr(emp_sudo, 'avatar_1920', False)
@@ -203,23 +229,23 @@ class EmployeeProfileWizard(models.TransientModel):
             ),
             # Personal details
             'name': val(emp.name),
-            'father_name': val(emp_sudo.private_info if False else '#N/A'),  # custom field
-            'mother_name': '#N/A',
+            'father_name': val(emp_sudo.father_name if hasattr(emp_sudo, 'father_name') else '#N/A'),
+            'mother_name': val(emp_sudo.mother_name if hasattr(emp_sudo, 'mother_name') else '#N/A'),
             'address': val(emp_sudo.private_street or ''),
             'contact': val(emp_sudo.private_phone or emp.mobile_phone or ''),
             'email': val(emp_sudo.private_email or emp.work_email or ''),
-            'language': '#N/A',
+            'language': val(emp_sudo.language if hasattr(emp_sudo, 'language') else '#N/A'),
             'birth_date': val(self._format_date(emp_sudo.birthday)),
             'gender': val(self._get_selection_label(emp, 'gender', emp.gender)),
             'marital': val(self._get_selection_label(emp_sudo, 'marital', emp_sudo.marital)),
-            'height': '#N/A',
-            'bank_account': val(emp_sudo.bank_account_id.acc_number if emp_sudo.bank_account_id else ''),
-            'food_preference': '#N/A',
-            'aadhaar': '#N/A',
-            'pan': '#N/A',
+            'height': val(str(emp_sudo.height) if hasattr(emp_sudo, 'height') and emp_sudo.height else '#N/A'),
+            'bank_account': val(emp_sudo.employee_bank_account if hasattr(emp_sudo, 'employee_bank_account') and emp_sudo.employee_bank_account else (emp_sudo.bank_account_id.acc_number if emp_sudo.bank_account_id else '')),
+            'food_preference': val(emp_sudo.food_preference if hasattr(emp_sudo, 'food_preference') else '#N/A'),
+            'aadhaar': val(emp_sudo.identification_id if hasattr(emp_sudo, 'identification_id') and emp_sudo.identification_id else '#N/A'),
+            'pan': val(emp_sudo.pan_no if hasattr(emp_sudo, 'pan_no') else emp_sudo.pan if hasattr(emp_sudo, 'pan') else '#N/A'),
             'nationality': val(emp_sudo.country_id.name if emp_sudo.country_id else ''),
-            'weight': '#N/A',
-            'uan': '#N/A',
+            'weight': val(str(emp_sudo.weight) if hasattr(emp_sudo, 'weight') and emp_sudo.weight else '#N/A'),
+            'uan': val(emp_sudo.uan if hasattr(emp_sudo, 'uan') else '#N/A'),
             # Sections
             'qualifications': qualifications,
             'experiences': experiences,
