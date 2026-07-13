@@ -18,12 +18,13 @@
         <field name="name">hr.employee.form.inherit.for.adding.important.fields</field>
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="priority" eval="99"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='job_id']" position="attributes">
                 <attribute name="string">Designation</attribute>
             </xpath>
             <xpath expr="//field[@name='coach_id']" position="attributes">
-                <attribute name="string">In-Charge</attribute>
+                <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='job_title']" position="attributes">
                 <attribute name="readonly">1</attribute>
@@ -42,6 +43,40 @@
                 <field name="blood_group"/>
 
 
+            </xpath>
+
+            <xpath expr="//group[@name='emergency']" position="after">
+                <group name="emergency2" string="Emergency Contact 2">
+                    <field name="emergency_contact2"/>
+                    <field name="emergency_phone2"/>
+                    <field name="emergency_relation2"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='certificate']" position="attributes">
+                <attribute name="string">Certificate/EXAM (MASTER,GRADUATION,INTER,MATRIC,ITI,DILOMA,BTECH,OTHER)</attribute>
+            </xpath>
+            <xpath expr="//field[@name='study_school']" position="attributes">
+                <attribute name="string">School(BOARD/UNIVERSITY )</attribute>
+            </xpath>
+            <xpath expr="//field[@name='study_school']" position="after">
+                <field name="study_status"/>
+                <field name="year_of_passing"/>
+            </xpath>
+            <xpath expr="//group[@name='application_group']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Leaves" name="leaves">
+                    <field name="leave_ids">
+                        <list string="Leaves">
+                            <field name="holiday_status_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="number_of_days"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                </page>
             </xpath>
             <xpath expr="//sheet//field[@name='birthday']" position="after">
                 <field name="age" readonly="0"/>
@@ -72,6 +107,15 @@
             </xpath>
             <xpath expr="//field[@name='distance_home_work']" position="attributes">
                 <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@for='private_street']" position="attributes">
+                <attribute name="string">PRIVATE ADDRESS (PERMANENT ADDRESS)</attribute>
+            </xpath>
+            <xpath expr="//field[@name='private_email']" position="attributes">
+                <attribute name="string">PRIVATE MAIL (PERSONAL MAIL)</attribute>
+            </xpath>
+            <xpath expr="//field[@name='private_phone']" position="attributes">
+                <attribute name="string">PRIVATE PHONE- (PERSONAL PHONE)</attribute>
             </xpath>
             <xpath expr="//div[@name='div_km_home_work']" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -105,6 +149,16 @@
 
             <xpath expr="//field[@name='has_work_permit']" position="attributes">
                 <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='bank_account_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='bank_account_id']" position="after">
+                <field name="employee_bank_account"/>
+                <field name="employee_bank_name"/>
+                <field name="employee_bank_ifsc"/>
             </xpath>
 
             <xpath expr="//page[@name='public']//group[@name='managers']" position="after">
@@ -168,7 +222,7 @@
                 </page>
             </xpath>
 
-            <xpath expr="//page[@name='public']//group[4]" position="replace">
+            <xpath expr="//page[@name='public']//group[field[@name='tz']]" position="replace">
                 <group string="Schedule" name="group_schedule">
                     <field name="resource_calendar_id" help="The default working hours are set in configuration."
                            invisible="1"/>
@@ -209,7 +263,7 @@
             </xpath>
 
             <xpath expr="//list/field[@name='coach_id']" position="attributes">
-                <attribute name="string">In-Charge</attribute>
+                <attribute name="invisible">1</attribute>
             </xpath>
 
 

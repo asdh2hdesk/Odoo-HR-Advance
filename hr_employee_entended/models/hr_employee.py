@@ -20,12 +20,17 @@ class Employee(models.Model):
     _inherit = 'hr.employee'
     _order = "employee_code, id"
 
+    has_timesheet = fields.Boolean(groups="base.group_user")
+    has_work_entries = fields.Boolean(groups="base.group_user")
+    calendar_mismatch = fields.Boolean(groups="base.group_user")
     joining_date = fields.Date(
         compute='_compute_joining_date',
         string='Joining Date',
         store=True,
         help="Employee joining date"
     )
+    leave_ids = fields.One2many('hr.leave', 'employee_id', string='Leaves', readonly=True)
+
     
     join_date = fields.Date(string='Join Date', store=True)
     last_working_date = fields.Date(string='Last Working Date', store=True, copy=False, help="Date the employee resigned or was archived.")
@@ -43,7 +48,20 @@ class Employee(models.Model):
     height = fields.Float(string='Height (CM)')
     weight = fields.Float(string='Weight (KG)')
     blood_group = fields.Char(string='Blood Group')
+
+    emergency_contact2 = fields.Char(string='Contact person')
+    emergency_phone2 = fields.Char(string='Phone No')
+    emergency_relation2 = fields.Char(string='Relation')
     country_id = fields.Many2one('res.country', string='Country', default=lambda self: self.env.company.country_id)
+
+    # Education Added Fields
+    study_status = fields.Selection([('PASS', 'PASS'), ('PURSUING', 'PURSUING')], string='STATUS')
+    year_of_passing = fields.Char(string='YEAR OF PASSING')
+
+    # Direct Bank Fields
+    employee_bank_account = fields.Char(string="Bank Account Number")
+    employee_bank_name = fields.Char(string="Bank Name")
+    employee_bank_ifsc = fields.Char(string="Bank IFSC Code")
 
     @api.depends('birthday')
     def _compute_age(self):

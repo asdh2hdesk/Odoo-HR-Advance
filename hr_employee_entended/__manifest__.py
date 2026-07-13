@@ -27,6 +27,7 @@
         'views/hr_timeoff_rename_inherit.xml',
         'views/hr_payslip_views.xml',
         'views/playslip_report_modifications.xml',
+        'report/hr_employee_badge.xml',
     ],
     
     

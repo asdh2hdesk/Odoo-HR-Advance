@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="print_employee_badge_inherit_custom" inherit_id="hr.print_employee_badge">
+        <xpath expr="//div[@class='page']" position="replace">
+            <div class="page">
+                <div class="oe_structure"></div>
+                <t t-foreach="docs" t-as="employee">
+                    <!-- Front Side -->
+                    <div style="display: inline-block; page-break-inside: avoid; width: 243pt; height: 153pt; border: 1pt solid black; border-radius:8pt; margin:5pt; padding: 2pt;">
+                        <div class="oe_structure"></div>
+                        <table style="width: 100%; height: 100%; border-spacing: 4pt; border-collapse: separate;" class="table-borderless">
+                            <tr>
+                                <td style="width: 33%;">
+                                    <table style="width: 100%; height: 100%; text-align: center;" class="table-borderless">
+                                        <t t-if="employee.company_id.logo">
+                                            <tr style="height:30%; padding-top: 4pt; padding-bottom: 2pt">
+                                                <td>
+                                                    <img t-att-src="image_data_uri(employee.company_id.logo)" style="max-height: 40pt; max-width: 100%;" alt="Company Logo"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <tr style="height:70%;">
+                                            <td style="height: 100%; width: 100%; padding-top: 2pt; padding-bottom: 4pt;">
+                                                <img t-att-src="image_data_uri(employee.avatar_1920)" style="max-height: 100pt; max-width: 100%;" alt="Employee Image"/>
+                                            </td> 
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width:67%; height:100%; vertical-align: top;">
+                                    <table style="width: 100%; height: 100%; text-align: center;" class="table-borderless">
+                                        <tr><th><span style="font-size: 15pt;" t-out="employee.name"></span></th></tr>
+                                        <tr><td><span style="font-size: 10pt;" t-out="employee.job_id.name"></span></td></tr>
+                                        <tr style="height: 100%;">
+                                            <td style="vertical-align: bottom; padding-bottom: 4pt;">
+                                                <div t-if="employee.barcode" t-field="employee.barcode" t-options="{'widget': 'barcode', 'width': 600, 'height': 120, 'img_style': 'max-width:100%;', 'img_align': 'center'}"></div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="oe_structure"></div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div style="display: inline-block; page-break-inside: avoid; width: 243pt; height: 153pt; border: 1pt solid black; border-radius:8pt; margin:5pt; padding: 6pt; font-size: 8pt; vertical-align: top;">
+                        <div style="font-weight: bold; font-size: 10pt; text-align: center; margin-bottom: 4pt;" t-out="employee.company_id.name"></div>
+                        <table style="width: 100%;" class="table-borderless">
+                            <tr>
+                                <td style="width: 45%; font-weight: bold;">Emp. Code:</td>
+                                <td style="width: 55%;" t-out="employee.employee_code"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Department:</td>
+                                <td t-out="employee.department_id.name"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Punch No.:</td>
+                                <td t-out="employee.barcode"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">DOJ:</td>
+                                <td t-out="employee.joining_date"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">DOB:</td>
+                                <td t-out="employee.birthday"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Contact No.:</td>
+                                <td t-out="employee.mobile_phone"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Family Emg.:</td>
+                                <td t-out="employee.emergency_phone"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Company Emg.:</td>
+                                <td>7861866302</td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+                <div class="oe_structure"></div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
