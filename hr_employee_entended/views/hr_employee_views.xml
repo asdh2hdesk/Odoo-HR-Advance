@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Server Action to Generate Barcodes for Selected Employees -->
     <record id="action_generate_employee_barcodes" model="ir.actions.server">
         <field name="name">Generate Barcodes</field>
         <field name="model_id" ref="hr.model_hr_employee"/>
@@ -11,6 +10,26 @@
         <field name="code">
             if records:
             action = records.action_generate_barcodes_bulk()
+        </field>
+    </record>
+
+    <!-- Server Action to Fix Missing Department/Job on Contracts -->
+    <record id="action_fix_contract_department" model="ir.actions.server">
+        <field name="name">Sync Dept/Job from Employee</field>
+        <field name="model_id" ref="hr_contract.model_hr_contract"/>
+        <field name="binding_model_id" ref="hr_contract.model_hr_contract"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+for record in records:
+    update_vals = {}
+    if record.employee_id:
+        if not record.department_id and record.employee_id.department_id:
+            update_vals['department_id'] = record.employee_id.department_id.id
+        if not record.job_id and record.employee_id.job_id:
+            update_vals['job_id'] = record.employee_id.job_id.id
+    if update_vals:
+        record.write(update_vals)
         </field>
     </record>
 
@@ -161,6 +180,14 @@
                 <field name="employee_bank_ifsc"/>
             </xpath>
 
+            <xpath expr="//page[@name='public']//group[@name='managers']" position="before">
+                <group name="work_contact_details" string="Work Contact"/>
+            </xpath>
+            <xpath expr="//group[@name='work_contact_details']" position="inside">
+                <xpath expr="//field[@name='work_email']" position="move"/>
+                <xpath expr="//field[@name='work_phone']" position="move"/>
+            </xpath>
+
             <xpath expr="//page[@name='public']//group[@name='managers']" position="after">
 
                 <group string="Contract">
@@ -182,10 +209,16 @@
             <xpath expr="//page[@name='hr_settings']" position="after">
                 <page name="employee_payroll_details" string="Payroll Details">
                     <group>
-                        <group string='Attendence Data' name="attendance_data">
+                        <group string="Attendance &amp; Overtime Data" name="attendance_data">
                             <field name="last_attendance_worked_hours" readonly="0" invisible="0"/>
                             <field name="last_attendance_id" readonly="0" invisible="0"/>
                             <field name="attendance_state" readonly="0" invisible="0"/>
+                            <field name="hours_previously_today" readonly="0" invisible="0"/>
+                            <field name="hours_last_month" readonly="0" invisible="0"/>
+                            <field name="has_timesheet" readonly="0" invisible="0"/>
+                            <field name="total_overtime" readonly="0" invisible="0"/>
+                        </group>
+                        <group string="Leaves &amp; Other Data" name="leaves_other_data">
                             <field name="leave_manager_id" readonly="0" invisible="0"/>
                             <field name="current_leave_id" readonly="0" invisible="0"/>
                             <field name="current_leave_state" readonly="0" invisible="0"/>
@@ -194,31 +227,19 @@
                             <field name="leaves_count" readonly="0" invisible="0"/>
                             <field name="show_leaves" readonly="0" invisible="0"/>
                             <field name="remaining_leaves" readonly="0" invisible="0"/>
-                            <field name="last_attendance_worked_hours" readonly="0" invisible="0"/>
-                            <field name="hours_previously_today" readonly="0" invisible="0"/>
-                            <field name="hours_previously_today" readonly="0" invisible="0"/>
-                            <field name="hours_last_month" readonly="0" invisible="0"/>
-
                             <field name="contracts_count" readonly="0" invisible="0"/>
-                            <!-- <field name="payslip_count" readonly="0" invisible="0"/> -->
                             <field name="related_partners_count" readonly="0" invisible="0"/>
                             <field name="child_all_count" readonly="0" invisible="0"/>
-                            <!-- <field name="expense_manager_id" readonly="0" invisible="0"/> -->
-
-                            <field name="has_timesheet" readonly="0" invisible="0"/>
-                            <field name="total_overtime" readonly="0" invisible="0"/>
                         </group>
-                        <group>
-                        </group>
-                        <field name="overtime_ids" widget="section_one2many"/>
-
-                        <field name="attendance_ids" widget="section_one2many"/>
-
-                        <field name="contract_ids" widget="section_one2many"/>
-
-                        <field name="candidate_id" widget="section_one2many"/>
-
                     </group>
+                    
+                    <field name="attendance_ids" widget="section_one2many"/>
+                    
+                    <!-- 
+                    <field name="overtime_ids" widget="section_one2many"/>
+                    <field name="contract_ids" widget="section_one2many"/>
+                    <field name="candidate_id" widget="section_one2many"/>
+                    -->
                 </page>
             </xpath>
 
@@ -345,6 +366,33 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='employee_id']" position="after">
                 <field name="employee_code" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_gamification.menu_hr_gamification" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Rename Received Badges to AWARDS AND RECOGNITION -->
+    <record id="hr_employee_badges_rename" model="ir.ui.view">
+        <field name="name">hr.employee.badges.rename</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_gamification.hr_hr_employee_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[.//field[@name='has_badges']]" position="attributes">
+                <attribute name="string">AWARDS AND RECOGNITION</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_employee_public_badges_rename" model="ir.ui.view">
+        <field name="name">hr.employee.public.badges.rename</field>
+        <field name="model">hr.employee.public</field>
+        <field name="inherit_id" ref="hr_gamification.hr_employee_public_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[.//field[@name='has_badges']]" position="attributes">
+                <attribute name="string">AWARDS AND RECOGNITION</attribute>
             </xpath>
         </field>
     </record>

@@ -17,7 +17,7 @@
           <field name="activity_type"/>
           <field name="state"/>
           <!-- Legend toggles -->
-          <field name="holiday_status_id" filters="1" string="Time Off Type" invisible="1"/>
+          <field name="holiday_status_id" filters="1" string="Leave Type" invisible="1"/>
           <field name="activity_type" filters="1" string="Attendance" invisible="1"/>
           <field name="state" filters="1" string="Status"/>
                 <field name="check_in"/>
@@ -76,7 +76,7 @@
         <filter string="Attendance (Present)" name="f_att" domain="[('activity_type','=','attendance')]"/>
         <filter string="Time Off" name="f_leave" domain="[('activity_type','=','time_off')]"/>
         <searchpanel>
-          <field name="leave_type_id" string="Time Off Type"/>
+          <field name="leave_type_id" string="Leave Type"/>
           <field name="employee_id" string="Employee"/>
         </searchpanel>
         <group expand="0" string="Group By">

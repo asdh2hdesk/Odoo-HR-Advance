@@ -20,9 +20,9 @@ class Employee(models.Model):
     _inherit = 'hr.employee'
     _order = "employee_code, id"
 
-    has_timesheet = fields.Boolean(groups="base.group_user")
-    has_work_entries = fields.Boolean(groups="base.group_user")
-    calendar_mismatch = fields.Boolean(groups="base.group_user")
+    has_timesheet = fields.Boolean(groups="hr.group_hr_user,base.group_user,hr_timesheet.group_hr_timesheet_user,base.group_system")
+    has_work_entries = fields.Boolean(groups="hr.group_hr_user,base.group_user,base.group_system")
+    calendar_mismatch = fields.Boolean(groups="hr.group_hr_user,base.group_user,base.group_system")
     joining_date = fields.Date(
         compute='_compute_joining_date',
         string='Joining Date',
@@ -63,6 +63,15 @@ class Employee(models.Model):
     employee_bank_name = fields.Char(string="Bank Name")
     employee_bank_ifsc = fields.Char(string="Bank IFSC Code")
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super(Employee, self).default_get(fields_list)
+        if 'category_ids' in fields_list and not res.get('category_ids'):
+            employee_tag = self.env['hr.employee.category'].search([('name', '=ilike', 'Employee')], limit=1)
+            if employee_tag:
+                res['category_ids'] = [(4, employee_tag.id)]
+        return res
+
     @api.depends('birthday')
     def _compute_age(self):
         """Compute employee age from birthday."""
@@ -73,6 +82,14 @@ class Employee(models.Model):
                 employee.age = delta.years
             else:
                 employee.age = 0
+
+    @api.constrains('identification_id')
+    def _check_aadhaar_number(self):
+        for employee in self:
+            if employee.identification_id:
+                # Check if it contains only digits and is exactly 12 characters long
+                if not employee.identification_id.isdigit() or len(employee.identification_id) != 12:
+                    raise ValidationError("AADHAAR CARD NUMBER must be exactly 12 digits.")
 
     @api.depends('join_date', 'create_date')
     def _compute_joining_date(self):
@@ -203,6 +220,19 @@ class Contract(models.Model):
                 # Ensure company_id is set if not already
                 if not contract.company_id and contract.employee_id.company_id:
                     contract.company_id = contract.employee_id.company_id
+
+    @api.onchange('employee_id')
+    def _onchange_employee_id_ui(self):
+        """Ensure UI is updated immediately when employee is selected or defaulted"""
+        if self.employee_id:
+            if self.employee_id.job_id:
+                self.job_id = self.employee_id.job_id
+            if self.employee_id.department_id:
+                self.department_id = self.employee_id.department_id
+            if self.employee_id.resource_calendar_id:
+                self.resource_calendar_id = self.employee_id.resource_calendar_id
+            if self.employee_id.company_id:
+                self.company_id = self.employee_id.company_id
 
     def write(self, vals):
         """Override write to handle contract updates, relying on base behavior for employee sync."""

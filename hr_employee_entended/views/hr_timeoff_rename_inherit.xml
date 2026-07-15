@@ -1,50 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <odoo>
-    <!-- Rename top-level Time Off menu to Leaves -->
+    
     <record id="hr_holidays.menu_hr_holidays_root" model="ir.ui.menu">
         <field name="name">Leaves</field>
     </record>
 
-    <!-- Rename Management > Time Off menu to Leaves -->
+    
     <record id="hr_holidays.menu_open_department_leave_approve" model="ir.ui.menu">
         <field name="name">Leaves</field>
     </record>
 
-    <!-- Rename Configuration > Time Off Types to Leave Types -->
+    
     <record id="hr_holidays.hr_holidays_status_menu_configuration" model="ir.ui.menu">
         <field name="name">Leave Types</field>
     </record>
 
-    <!-- Rename dashboard action title from All Time Off to All Leaves -->
+    
     <record id="hr_holidays.action_hr_holidays_dashboard" model="ir.actions.act_window">
         <field name="name">All Leaves</field>
     </record>
 
-    <!-- Rename common actions from Time Off to Leave(s) -->
+    
     <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
         <field name="name">All Leaves</field>
     </record>
     <record id="hr_holidays.hr_leave_action_holiday_allocation_id" model="ir.actions.act_window">
         <field name="name">Leaves</field>
     </record>
-    <!-- <record id="hr_holidays.hr_leave_action_my" model="ir.actions.act_window">
-        <field name="name">My Leaves</field>
-    </record> -->
+    
     <record id="hr_holidays.action_hr_available_holidays_report" model="ir.actions.act_window">
         <field name="name">Leave Analysis</field>
     </record>
 
-    <!-- Rename "My Time" / "My Time Off" menu to "My Leaves" -->
+    
     <record id="hr_holidays.hr_leave_menu_my" model="ir.ui.menu">
         <field name="name">My Leaves</field>
     </record>
 
-    <!-- Hide "My Time" top-level menu item -->
+    
     <record id="hr_holidays.menu_hr_holidays_my_leaves" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="False" />
     </record>
 
-    <!-- Our module: rename allocation items to Leaves -->
+    
     <record id="action_open_multi_timeoff_allocation" model="ir.actions.act_window">
         <field name="name">Allocate Leaves (All Employees)</field>
     </record>
@@ -52,23 +50,14 @@
         <field name="name">Allocate Leaves (All Employees)</field>
     </record>
 
-    <!-- Example: change field label occurrences in search view (calendar report) from Time Off Type to Leave Type -->
-    <!-- <record id="hr_leave_report_calendar_view_search_rename" model="ir.ui.view">
-        <field name="name">hr.leave.report.calendar.search.rename.leave.type</field>
-        <field name="model">hr.leave.report.calendar</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view_search"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='holiday_status_id']" position="attributes">
-                <attribute name="string">Leave Type</attribute>
-            </xpath>
-        </field>
-    </record> -->
+    
+    
 
-    <!-- Example: change label in leave type list/filter view from Time Off Type to Leave Type -->
+    
     <record id="view_holidays_status_filter_rename" model="ir.ui.view">
         <field name="name">hr.leave.type.filter.rename</field>
         <field name="model">hr.leave.type</field>
-        <field name="inherit_id" ref="hr_holidays.view_holidays_status_filter"/>
+        <field name="inherit_id" ref="hr_holidays.view_holidays_status_filter" />
         <field name="arch" type="xml">
             <xpath expr="//search//field[@name='name']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -76,11 +65,11 @@
         </field>
     </record>
 
-    <!-- Rename strings in hr.leave views from Time Off to Leave/Leaves -->
+    
     <record id="hr_leave_view_form_rename" model="ir.ui.view">
         <field name="name">hr.leave.view.form.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//form" position="attributes">
                 <attribute name="string">Leave Request</attribute>
@@ -94,7 +83,7 @@
     <record id="hr_leave_view_activity_rename" model="ir.ui.view">
         <field name="name">hr.leave.view.activity.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_activity"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_activity" />
         <field name="arch" type="xml">
             <xpath expr="//activity" position="attributes">
                 <attribute name="string">Leave Request</attribute>
@@ -105,7 +94,7 @@
     <record id="hr_leave_view_dashboard_rename" model="ir.ui.view">
         <field name="name">hr.leave.view.dashboard.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_dashboard"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_dashboard" />
         <field name="arch" type="xml">
             <xpath expr="//calendar" position="attributes">
                 <attribute name="string">Leave Request</attribute>
@@ -116,7 +105,7 @@
     <record id="hr_leave_employee_view_dashboard_rename" model="ir.ui.view">
         <field name="name">hr.leave.employee.view.dashboard.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_employee_view_dashboard"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_employee_view_dashboard" />
         <field name="arch" type="xml">
             <xpath expr="//calendar" position="attributes">
                 <attribute name="string">Leave Request</attribute>
@@ -127,7 +116,7 @@
     <record id="hr_leave_view_calendar_rename" model="ir.ui.view">
         <field name="name">hr.leave.view.calendar.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_calendar"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_calendar" />
         <field name="arch" type="xml">
             <xpath expr="//calendar" position="attributes">
                 <attribute name="string">Leave Request</attribute>
@@ -135,11 +124,11 @@
         </field>
     </record>
 
-    <!-- Also rename holiday_status_id label in manager form view -->
+    
     <record id="hr_leave_view_form_manager_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.view.form.manager.rename.field</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form_manager"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form_manager" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -147,11 +136,11 @@
         </field>
     </record>
 
-    <!-- Rename holiday_status_id label in list/tree views -->
+    
     <record id="hr_leave_view_tree_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.view.tree.rename.field</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree" />
         <field name="arch" type="xml">
             <xpath expr="//list//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -161,7 +150,7 @@
     <record id="hr_leave_view_tree_my_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.view.tree.my.rename.field</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree_my"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree_my" />
         <field name="arch" type="xml">
             <xpath expr="//list//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -169,11 +158,11 @@
         </field>
     </record>
 
-    <!-- Rename holiday_status_id label in search views -->
+    
     <record id="hr_leave_view_search_my_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.view.search.my.rename.field</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_search_my"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_search_my" />
         <field name="arch" type="xml">
             <xpath expr="//search//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -183,7 +172,7 @@
     <record id="hr_leave_view_search_manager_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.view.search.manager.rename.field</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_view_search_manager"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_search_manager" />
         <field name="arch" type="xml">
             <xpath expr="//search//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -191,22 +180,13 @@
         </field>
     </record>
 
-    <!-- Rename holiday_status_id label in calendar report search view -->
-    <!-- <record id="hr_leave_report_calendar_view_search_rename" model="ir.ui.view">
-        <field name="name">hr.leave.report.calendar.search.rename.leave.type</field>
-        <field name="model">hr.leave.report.calendar</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view_search"/>
-        <field name="arch" type="xml">
-            <xpath expr="//search//field[@name='holiday_status_id']" position="attributes">
-                <attribute name="string">Leave Type</attribute>
-            </xpath>
-        </field>
-    </record> -->
+    
+    
 
     <record id="view_holiday_pivot_rename" model="ir.ui.view">
         <field name="name">hr.holidays.report_pivot.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.view_holiday_pivot"/>
+        <field name="inherit_id" ref="hr_holidays.view_holiday_pivot" />
         <field name="arch" type="xml">
             <xpath expr="//pivot" position="attributes">
                 <attribute name="string">Leave Summary</attribute>
@@ -217,7 +197,7 @@
     <record id="view_holiday_graph_rename" model="ir.ui.view">
         <field name="name">hr.holidays.report_graph.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.view_holiday_graph"/>
+        <field name="inherit_id" ref="hr_holidays.view_holiday_graph" />
         <field name="arch" type="xml">
             <xpath expr="//graph" position="attributes">
                 <attribute name="string">Leave Summary</attribute>
@@ -228,7 +208,7 @@
     <record id="view_holiday_list_rename" model="ir.ui.view">
         <field name="name">hr.holidays.report_list.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.view_holiday_list"/>
+        <field name="inherit_id" ref="hr_holidays.view_holiday_list" />
         <field name="arch" type="xml">
             <xpath expr="//list" position="attributes">
                 <attribute name="string">Leave Summary</attribute>
@@ -239,7 +219,7 @@
     <record id="view_hr_holidays_filter_rename" model="ir.ui.view">
         <field name="name">hr.holidays.filter.rename</field>
         <field name="model">hr.leave</field>
-        <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
+        <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter" />
         <field name="arch" type="xml">
             <xpath expr="//search" position="attributes">
                 <attribute name="string">Search Leaves</attribute>
@@ -253,11 +233,11 @@
         </field>
     </record>
 
-    <!-- Allocation form: rename holiday_status_id label to Leave Type -->
+    
     <record id="hr_leave_allocation_view_form_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.allocation.view.form.rename.field</field>
         <field name="model">hr.leave.allocation</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -265,11 +245,11 @@
         </field>
     </record>
 
-    <!-- Allocation list (tree): rename holiday_status_id column header to Leave Type -->
+    
     <record id="hr_leave_allocation_view_tree_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.allocation.view.tree.rename.field</field>
         <field name="model">hr.leave.allocation</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_tree"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_tree" />
         <field name="arch" type="xml">
             <xpath expr="//list//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -277,11 +257,11 @@
         </field>
     </record>
 
-    <!-- Allocation list (my): ensure header also shows Leave Type if needed -->
+    
     <record id="hr_leave_allocation_view_tree_my_rename_field" model="ir.ui.view">
         <field name="name">hr.leave.allocation.view.tree.my.rename.field</field>
         <field name="model">hr.leave.allocation</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_tree_my"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_tree_my" />
         <field name="arch" type="xml">
             <xpath expr="//list//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -289,11 +269,11 @@
         </field>
     </record>
 
-    <!-- Allocation search view: rename occurrences to Leave Type for consistency -->
+    
     <record id="view_hr_leave_allocation_filter_rename" model="ir.ui.view">
         <field name="name">hr.leave.allocation.filter.rename</field>
         <field name="model">hr.leave.allocation</field>
-        <field name="inherit_id" ref="hr_holidays.view_hr_leave_allocation_filter"/>
+        <field name="inherit_id" ref="hr_holidays.view_hr_leave_allocation_filter" />
         <field name="arch" type="xml">
             <xpath expr="//search//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -304,11 +284,11 @@
         </field>
     </record>
 
-    <!-- Wizards: rename holiday_status_id label to Leave Type -->
+    
     <record id="hr_leave_allocation_generate_multi_wizard_view_form_inherit" model="ir.ui.view">
         <field name="name">hr.leave.allocation.generate.multi.wizard.form.inherit.rename</field>
         <field name="model">hr.leave.allocation.generate.multi.wizard</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_generate_multi_wizard_view_form"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_generate_multi_wizard_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//form//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
@@ -322,10 +302,41 @@
     <record id="hr_leave_generate_multi_wizard_view_form_inherit" model="ir.ui.view">
         <field name="name">hr.leave.generate.multi.wizard.form.inherit.rename</field>
         <field name="model">hr.leave.generate.multi.wizard</field>
-        <field name="inherit_id" ref="hr_holidays.hr_leave_generate_multi_wizard_view_form"/>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_generate_multi_wizard_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//form//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Leave Type</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_employee_view_form_leave_rename" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.leave.rename</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_holidays.view_employee_form_leave_inherit" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_time_off_dashboard']//div[1]/span[2]" position="replace">
+                <span class="o_stat_text">Leaves</span>
+            </xpath>
+            <xpath expr="//button[@name='action_time_off_dashboard']//div[2]/span[1]" position="replace">
+                <span class="o_stat_text">Leaves</span>
+            </xpath>
+            <xpath expr="//field[@name='leave_manager_id']" position="attributes">
+                <attribute name="string">Leaves Approver</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_users_view_form_leave_rename" model="ir.ui.view">
+        <field name="name">hr.user.preferences.view.form.leave.rename</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="hr_holidays.res_users_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(hr_holidays.hr_leave_action_new_request)d'][1]" position="attributes">
+                <attribute name="string">Request Leaves</attribute>
+            </xpath>
+            <xpath expr="//button[@name='%(hr_holidays.hr_leave_action_new_request)d']//div/span[2]" position="replace">
+                <span class="o_stat_text">Leaves</span>
             </xpath>
         </field>
     </record>

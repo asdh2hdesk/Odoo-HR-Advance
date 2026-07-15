@@ -224,6 +224,7 @@ class AttendancemasterWizard(models.TransientModel):
 
     def _prepare_report_data(self):
         """Prepare data for the XLSX report."""
+        self = self.sudo()
         self.ensure_one()
         employees = self._get_employees()
         

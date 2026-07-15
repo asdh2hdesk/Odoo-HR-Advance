@@ -12,7 +12,7 @@
                         class="btn-primary"/>
             </xpath>
 
-            <xpath expr="//sheet" position="inside">
+            <xpath expr="//page[@name='information']" position="inside">
                 <group string="Appointment Letter">
                     <group>
                         <field name="appointment_letter_ref" readonly="1"/>

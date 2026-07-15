@@ -4,8 +4,10 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='work_email']" position="after">
-                <field name="biometric_id"/>
+            <xpath expr="//page[@name='public']//group[@name='managers']" position="before">
+                <group name="biometric_group" string="Biometric Information">
+                    <field name="biometric_id"/>
+                </group>
             </xpath>
         </field>
     </record>

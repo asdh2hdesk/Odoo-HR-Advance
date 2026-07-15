@@ -3,7 +3,7 @@
     'version': '18.0.0.0',
     'summary': 'Biometric Device Integration with HR Attendance',
     'author': 'RAKESH ASD',
-    'depends': ['hr_attendance'],
+    'depends': ['hr_attendance', 'hr_employee_entended'],
     'data': [
         'security/ir.model.access.csv',
         'views/hr_employee_view.xml',

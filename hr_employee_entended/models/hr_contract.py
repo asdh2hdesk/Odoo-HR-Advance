@@ -3,6 +3,8 @@ from odoo import fields, models, api
 class HrContract(models.Model):
     _inherit = 'hr.contract'
 
+    wage_on_signature = fields.Monetary(string="Offer Accepted Wage")
+
     default_structure_id = fields.Many2one(
         'hr.payroll.structure',
         compute='_compute_default_structure_id',
