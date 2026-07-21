@@ -191,10 +191,21 @@ class HrContract(models.Model):
 
     def action_refresh_salary_structure(self):
         """Button action to refresh salary structure from template."""
+        reloaded_count = 0
         for contract in self:
             if contract.salary_structure_id:
                 contract._apply_salary_structure_template()
-        return True
+                reloaded_count += 1
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Reload from Template'),
+                'message': _('%d contract(s) reloaded from template successfully.') % reloaded_count,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_recompute_salary_amounts(self):
         """Button action to recompute all salary line amounts."""
