@@ -11,7 +11,15 @@ class HrEmployeePromotion(models.Model):
 
     name = fields.Char(string='Reference', required=True, copy=False, readonly=True, default=lambda self: _('New'))
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True, ondelete='cascade', index=True)
-    company_id = fields.Many2one('res.company', string='Company', related='employee_id.company_id', store=True, readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', compute='_compute_company_id', store=True, readonly=False, precompute=True, default=lambda self: self.env.company)
+
+    @api.depends('employee_id')
+    def _compute_company_id(self):
+        for rec in self:
+            if rec.employee_id and rec.employee_id.company_id:
+                rec.company_id = rec.employee_id.company_id
+            elif not rec.company_id:
+                rec.company_id = self.env.company
     
     promotion_date = fields.Date(string='Promotion Proposal Date', default=fields.Date.context_today, required=True)
     effective_date = fields.Date(string='Effective Date', default=fields.Date.context_today, required=True)
@@ -28,6 +36,9 @@ class HrEmployeePromotion(models.Model):
     current_grade = fields.Char(string='Current Grade / Designation')
     new_grade = fields.Char(string='New Grade / Designation')
 
+    increment_ids = fields.One2many('hr.salary.increment', 'promotion_id', string='Salary Increments')
+    increment_count = fields.Integer(string='Increment Count', compute='_compute_increment_count')
+
     reason = fields.Text(string='Reason for Promotion')
     notes = fields.Text(string='Internal Notes')
 
@@ -39,6 +50,11 @@ class HrEmployeePromotion(models.Model):
     ], string='Status', default='draft', required=True, copy=False)
 
     display_name = fields.Char(string='Display Name', compute='_compute_display_name_field', store=True)
+
+    @api.depends('increment_ids')
+    def _compute_increment_count(self):
+        for rec in self:
+            rec.increment_count = len(rec.increment_ids)
 
     @api.depends('employee_id', 'new_job_id', 'effective_date')
     def _compute_display_name_field(self):
@@ -95,3 +111,33 @@ class HrEmployeePromotion(models.Model):
     def action_draft(self):
         for rec in self:
             rec.state = 'draft'
+
+    def action_create_salary_increment(self):
+        self.ensure_one()
+        return {
+            'name': _('Create Salary Increment'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'hr.salary.increment',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_employee_id': self.employee_id.id,
+                'default_promotion_id': self.id,
+                'default_effective_date': self.effective_date,
+                'default_reason': _("Salary increment associated with promotion %s") % self.name,
+            }
+        }
+
+    def action_view_increments(self):
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id("hr_promotion_increment.action_hr_salary_increment")
+        action['domain'] = [('promotion_id', '=', self.id)]
+        action['context'] = {
+            'default_employee_id': self.employee_id.id,
+            'default_promotion_id': self.id,
+            'default_effective_date': self.effective_date,
+        }
+        if len(self.increment_ids) == 1:
+            action['views'] = [(False, 'form')]
+            action['res_id'] = self.increment_ids.id
+        return action

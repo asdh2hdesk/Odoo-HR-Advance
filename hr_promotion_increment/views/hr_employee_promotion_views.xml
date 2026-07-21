@@ -20,11 +20,17 @@
                 <header>
                     <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'draft'"/>
                     <button name="action_apply" type="object" string="Apply Promotion" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_create_salary_increment" type="object" string="Create Salary Increment" class="oe_highlight" invisible="state not in ('approved', 'done')"/>
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ('done', 'cancel')"/>
                     <button name="action_draft" type="object" string="Set to Draft" invisible="state != 'cancel'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,approved,done"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_increments" type="object" class="oe_stat_button" icon="fa-line-chart" invisible="increment_count == 0 and state not in ('approved', 'done')">
+                            <field name="increment_count" widget="statinfo" string="Salary Increment"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>

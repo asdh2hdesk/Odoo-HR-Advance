@@ -16,6 +16,7 @@ This module allows HR to manage and track employee promotions and salary increas
     'depends': ['hr', 'hr_contract'],
     'data': [
         'security/ir.model.access.csv',
+        'security/ir_rule.xml',
         'views/hr_employee_promotion_views.xml',
         'views/hr_salary_increment_views.xml',
         'views/hr_employee_views.xml',

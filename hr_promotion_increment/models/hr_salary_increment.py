@@ -11,8 +11,17 @@ class HrSalaryIncrement(models.Model):
 
     name = fields.Char(string='Reference', required=True, copy=False, readonly=True, default=lambda self: _('New'))
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True, ondelete='cascade', index=True)
-    contract_id = fields.Many2one('hr.contract', string='Contract', domain="[('employee_id', '=', employee_id)]")
-    company_id = fields.Many2one('res.company', string='Company', related='employee_id.company_id', store=True, readonly=True)
+    promotion_id = fields.Many2one('hr.employee.promotion', string='Promotion', ondelete='set null', index=True)
+    contract_id = fields.Many2one('hr.contract', string='Contract', compute='_compute_contract_id', store=True, readonly=False, precompute=True, domain="[('employee_id', '=', employee_id)]")
+    company_id = fields.Many2one('res.company', string='Company', compute='_compute_company_id', store=True, readonly=False, precompute=True, default=lambda self: self.env.company)
+
+    @api.depends('employee_id')
+    def _compute_company_id(self):
+        for rec in self:
+            if rec.employee_id and rec.employee_id.company_id:
+                rec.company_id = rec.employee_id.company_id
+            elif not rec.company_id:
+                rec.company_id = self.env.company
     currency_id = fields.Many2one('res.currency', string='Currency', compute='_compute_currency_id', store=True)
 
     increment_date = fields.Date(string='Proposal Date', default=fields.Date.context_today, required=True)
@@ -23,8 +32,8 @@ class HrSalaryIncrement(models.Model):
         ('fixed', 'Fixed Monthly Amount'),
     ], string='Increment Mode', default='percentage', required=True)
 
-    previous_wage = fields.Monetary(string='Previous Monthly Wage', currency_field='currency_id')
-    previous_ctc = fields.Monetary(string='Previous Annual CTC', currency_field='currency_id')
+    previous_wage = fields.Monetary(string='Previous Monthly Wage', currency_field='currency_id', compute='_compute_previous_salary', store=True, readonly=False, precompute=True)
+    previous_ctc = fields.Monetary(string='Previous Annual CTC', currency_field='currency_id', compute='_compute_previous_salary', store=True, readonly=False, precompute=True)
 
     increment_value = fields.Float(string='Increment Value', default=0.0, required=True, help="Percentage (%) or Monthly Fixed Amount to add.")
     increment_amount_monthly = fields.Monetary(string='Monthly Salary Hike', currency_field='currency_id', compute='_compute_new_salary', store=True)
@@ -44,6 +53,34 @@ class HrSalaryIncrement(models.Model):
 
     display_name = fields.Char(string='Display Name', compute='_compute_display_name_field', store=True)
 
+    @api.depends('employee_id', 'promotion_id')
+    def _compute_contract_id(self):
+        for rec in self:
+            emp = rec.employee_id
+            if not emp and rec.promotion_id:
+                emp = rec.promotion_id.employee_id
+            if emp:
+                open_contract = self.env['hr.contract'].search([
+                    ('employee_id', '=', emp.id),
+                    ('state', 'in', ['open', 'draft'])
+                ], limit=1, order='state asc, id desc')
+                rec.contract_id = open_contract if open_contract else False
+            else:
+                rec.contract_id = False
+
+    @api.depends('contract_id', 'employee_id')
+    def _compute_previous_salary(self):
+        for rec in self:
+            if rec.contract_id:
+                rec.previous_wage = rec.contract_id.wage
+                if hasattr(rec.contract_id, 'final_yearly_costs'):
+                    rec.previous_ctc = rec.contract_id.final_yearly_costs
+                else:
+                    rec.previous_ctc = rec.contract_id.wage * 12.0
+            else:
+                rec.previous_wage = 0.0
+                rec.previous_ctc = 0.0
+
     @api.depends('employee_id.company_id', 'contract_id.currency_id')
     def _compute_currency_id(self):
         for rec in self:
@@ -62,8 +99,10 @@ class HrSalaryIncrement(models.Model):
             else:
                 rec.display_name = _("New Salary Increment")
 
-    @api.onchange('employee_id')
+    @api.onchange('employee_id', 'promotion_id')
     def _onchange_employee_id(self):
+        if not self.employee_id and self.promotion_id and self.promotion_id.employee_id:
+            self.employee_id = self.promotion_id.employee_id
         if self.employee_id:
             # Find active contract or latest contract
             open_contract = self.env['hr.contract'].search([
