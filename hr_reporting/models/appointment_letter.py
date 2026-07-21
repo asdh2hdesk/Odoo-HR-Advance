@@ -167,7 +167,7 @@ class HrContractAppointmentLetter(models.Model):
         email = (
             getattr(emp, "private_email", False)
             or getattr(emp, "work_email", False)
-            or "____________________"
+            or "N/A"
         )
         doc.add_paragraph("Email: %s" % email)
 
@@ -214,9 +214,9 @@ class HrContractAppointmentLetter(models.Model):
             [
                 ("As discussed, your gross remuneration is INR ", False),
                 (annual_ctc_words, True),
-                (" per annum which include direct and indirect benefit attached here your "
-                 "position and a detail break up of your remuneration packaged has been "
-                 "outline in ", False),
+                (" per annum which includes direct and indirect benefit attached to your "
+                 "position and a detail break up of your remuneration package has been "
+                 "outlined in ", False),
                 ("Annexture-1", True),
                 (".", False),
             ],
@@ -317,18 +317,18 @@ class HrContractAppointmentLetter(models.Model):
             # 14. Calendar year
             [
                 ("The leaves will be allotted as per the company norms in the ", False),
-                ("Colander year (Jan to Dec.)", True),
+                ("Calendar Year (Jan. to Dec.)", True),
                 ("", False),
             ],
             # 15. Confidentiality
             [
-                ("The success of our organization lies in its key's areas of performance like "
+                ("The success of our organization lies in its key areas of performance like "
                  "process, methods, operational strategy, information, management know-how, "
                  "knowledge, etc. pertaining to manufacturing, procuring, marketing, trading "
-                 "and whole gamut of is business activity. It is therefore expected, that you "
+                 "and whole gamut of its business activity. It is therefore expected, that you "
                  "will maintain ", False),
                 ("utmost confidentiality", True),
-                (" and under no circumstances shall directly or indirectly impart/share to any "
+                (" and under no circumstances shall directly or indirectly disclose to or share with any "
                  "person, any information regarding company's business, plan, progress, "
                  "prospects or affairs and shall not pledge the Credit of the Company for any "
                  "reason or purpose whatsoever.", False),
@@ -339,12 +339,12 @@ class HrContractAppointmentLetter(models.Model):
                  "which you attain the age of ", False),
                 (RETIREMENT_AGE, True),
                 (". In this context, please furnish us with an attested copy of your ", False),
-                ("pan card and Aadhar card", True),
+                ("PAN card and Aadhaar card", True),
                 (".", False),
             ],
             # 17. Address correspondence
             [
-                ("All future correspondence will be sent of you at the address above in this "
+                ("All future correspondence will be sent to you at the address above in this "
                  "letter. In case of change in address, you will intimate us in writing within ",
                  False),
                 ("7 days", True),
@@ -413,7 +413,7 @@ class HrContractAppointmentLetter(models.Model):
         ]
         deductions = [
             ("Pt", "PT"),
-            ("Bonus", "BONUS"),
+            # ("Bonus", "BONUS"),
             ("IT", "IT"),
         ]
         comp_rows = [(label, self._appt_amount(code)) for label, code in components]
