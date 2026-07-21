@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Sequence for Salary Increment Reference -->
+    <record id="seq_hr_salary_increment" model="ir.sequence">
+        <field name="name">Salary Increment Sequence</field>
+        <field name="code">hr.salary.increment</field>
+        <field name="prefix">INC/</field>
+        <field name="padding">5</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_hr_salary_increment_form" model="ir.ui.view">
+        <field name="name">hr.salary.increment.form</field>
+        <field name="model">hr.salary.increment</field>
+        <field name="arch" type="xml">
+            <form string="Salary Increment">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_apply" type="object" string="Apply Increment" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('done', 'cancel')"/>
+                    <button name="action_draft" type="object" string="Set to Draft" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Employee &amp; Contract">
+                            <field name="employee_id" readonly="state == 'done'"/>
+                            <field name="contract_id" readonly="state == 'done'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Timeline">
+                            <field name="increment_date" readonly="state == 'done'"/>
+                            <field name="effective_date" readonly="state == 'done'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Increment Mode">
+                            <field name="increment_type" widget="radio" readonly="state == 'done'"/>
+                            <field name="increment_value" readonly="state == 'done'"/>
+                        </group>
+                        <group string="Monthly Salary Hike">
+                            <field name="increment_amount_monthly" readonly="1" class="oe_subtotal_footer_separator"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Previous Salary">
+                            <field name="previous_wage" readonly="1"/>
+                            <field name="previous_ctc" readonly="1"/>
+                        </group>
+                        <group string="Revised Salary">
+                            <field name="new_wage" readonly="1"/>
+                            <field name="new_ctc" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Justification &amp; Notes" name="reason_notes">
+                            <group>
+                                <field name="reason" placeholder="Performance summary / Reason for increment..." readonly="state == 'done'"/>
+                                <field name="notes" placeholder="Internal HR / Management notes..." readonly="state == 'done'"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List / Tree View -->
+    <record id="view_hr_salary_increment_tree" model="ir.ui.view">
+        <field name="name">hr.salary.increment.list</field>
+        <field name="model">hr.salary.increment</field>
+        <field name="arch" type="xml">
+            <list string="Salary Increments" decoration-info="state == 'draft'" decoration-warning="state == 'approved'" decoration-success="state == 'done'" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="contract_id"/>
+                <field name="effective_date"/>
+                <field name="previous_wage"/>
+                <field name="increment_amount_monthly"/>
+                <field name="new_wage"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'approved'" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_hr_salary_increment_search" model="ir.ui.view">
+        <field name="name">hr.salary.increment.search</field>
+        <field name="model">hr.salary.increment</field>
+        <field name="arch" type="xml">
+            <search string="Search Salary Increments">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="contract_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="Applied" name="done" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Increment Mode" name="group_mode" context="{'group_by': 'increment_type'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_hr_salary_increment" model="ir.actions.act_window">
+        <field name="name">Salary Increments</field>
+        <field name="res_model">hr.salary.increment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_salary_increment_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Log a new Salary Increment!
+            </p>
+            <p>
+                Track wage adjustments, annual CTC revisions, percentage/fixed hikes, and approval status.
+            </p>
+        </field>
+    </record>
+
+</odoo>

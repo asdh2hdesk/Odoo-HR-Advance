@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Career & Salary Top Submenu under HR -->
+    <menuitem id="menu_hr_career_history_root"
+              name="Career &amp; Salary"
+              parent="hr.menu_hr_root"
+              sequence="25"
+              groups="hr.group_hr_user"/>
+
+    <!-- Promotions Menu Item -->
+    <menuitem id="menu_hr_employee_promotion"
+              name="Employee Promotions"
+              parent="menu_hr_career_history_root"
+              action="action_hr_employee_promotion"
+              sequence="10"
+              groups="hr.group_hr_user"/>
+
+    <!-- Salary Increments Menu Item -->
+    <menuitem id="menu_hr_salary_increment"
+              name="Salary Increments"
+              parent="menu_hr_career_history_root"
+              action="action_hr_salary_increment"
+              sequence="20"
+              groups="hr.group_hr_user"/>
+
+</odoo>
