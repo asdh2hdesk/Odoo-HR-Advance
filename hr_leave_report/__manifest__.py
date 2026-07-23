@@ -7,7 +7,7 @@
     """,
     'category': 'Human Resources/Time Off',
     'author': 'Balaji Bathini',
-    'depends': ['hr_holidays','EHS'],
+    'depends': ['hr_holidays'],
     'data': [
         'security/ir.model.access.csv',
         'wizards/upload_attendance_wizard_views.xml',

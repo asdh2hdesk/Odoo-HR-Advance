@@ -11,7 +11,6 @@
     'category': 'Human Resources',
     'depends': ['hr_attendance_gantt', 'hr_holidays', 'report_xlsx', 'hr_induction',
                 'hr_expense',
-                'EHS',
                 'hr_employee_entended',
                 ],
     'data': [

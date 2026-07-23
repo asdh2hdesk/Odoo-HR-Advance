@@ -21,7 +21,7 @@
     'website': 'https://github.com/Akshat-10',
     'sequence': -8,
     'category': 'Human Resources',
-    'depends': ['hr_attendance', 'hr_holidays', 'hr', 'report_xlsx', 'resource', 'EHS', 'hr_employee_entended'],
+    'depends': ['hr_attendance', 'hr_holidays', 'hr', 'report_xlsx', 'resource', 'hr_employee_entended'],
     'data': [
         'security/ir.model.access.csv',
         'data/hr_leave_type_data.xml',
