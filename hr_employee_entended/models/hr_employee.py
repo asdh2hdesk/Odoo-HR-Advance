@@ -20,6 +20,7 @@ class Employee(models.Model):
     _inherit = 'hr.employee'
     _order = "employee_code, id"
 
+    employee_code = fields.Char(string="Employee Code", copy=False, tracking=True, index=True)
     has_timesheet = fields.Boolean(groups="hr.group_hr_user,base.group_user,hr_timesheet.group_hr_timesheet_user,base.group_system")
     has_work_entries = fields.Boolean(groups="hr.group_hr_user,base.group_user,base.group_system")
     calendar_mismatch = fields.Boolean(groups="hr.group_hr_user,base.group_user,base.group_system")
