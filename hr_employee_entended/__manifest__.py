@@ -16,7 +16,7 @@
                 'hr_payroll', 'hr_payroll_account', 'hr_contract_salary', 
                 # 'hr_expense',
                 'hr_induction', 'hr_employee_updation', 'hr_timesheet',
-                'EHS', 'hr_gamification',
+                'hr_gamification',
                 ],
     "data": [
         'security/ir.model.access.csv',
