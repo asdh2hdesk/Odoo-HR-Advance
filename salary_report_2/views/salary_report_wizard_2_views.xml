@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Salary Report 2.0 Wizard Form -->
+    <record id="view_salary_report_wizard_2_form" model="ir.ui.view">
+        <field name="name">salary.report.wizard.2.form</field>
+        <field name="model">salary.report.wizard.2</field>
+        <field name="arch" type="xml">
+            <form string="Generate New Salary Sheet">
+                <group>
+                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="all_employee"/>
+                    <field name="employee_ids"
+                           widget="many2many_tags"
+                           invisible="all_employee"/>
+                </group>
+                <footer>
+                    <button name="action_generate_complete_salary_report"
+                            type="object"
+                            string="Generate Salary Sheet Snapshot"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

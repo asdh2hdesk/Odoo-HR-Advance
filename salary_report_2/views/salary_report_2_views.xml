@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- List View for salary.report.2 -->
+    <record id="view_salary_report_2_tree" model="ir.ui.view">
+        <field name="name">salary.report.2.list</field>
+        <field name="model">salary.report.2</field>
+        <field name="arch" type="xml">
+            <list string="Monthly Salary Reports" decoration-info="state=='draft'" decoration-success="state=='calculated'" decoration-muted="state=='locked'">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="total_employees"/>
+                <field name="total_gross_salary" widget="monetary"/>
+                <field name="total_net_pay" widget="monetary"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View for salary.report.2 -->
+    <record id="view_salary_report_2_form" model="ir.ui.view">
+        <field name="name">salary.report.2.form</field>
+        <field name="model">salary.report.2</field>
+        <field name="arch" type="xml">
+            <form string="Salary Sheet Report">
+                <header>
+                    <button name="action_fetch_and_compute"
+                            type="object"
+                            string="Fetch &amp; Calculate Data"
+                            class="btn-primary"
+                            invisible="state == 'locked'"/>
+                    <button name="action_generate_xlsx"
+                            type="object"
+                            string="Download XLSX"
+                            class="btn-success"
+                            invisible="state == 'draft'"/>
+                    <button name="action_lock"
+                            type="object"
+                            string="Lock Sheet"
+                            class="btn-warning"
+                            invisible="state != 'calculated'"/>
+                    <button name="action_reset_draft"
+                            type="object"
+                            string="Reset to Draft"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,calculated,locked"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Salary Sheet Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_from" readonly="state == 'locked'"/>
+                            <field name="date_to" readonly="state == 'locked'"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" readonly="state == 'locked'"/>
+                        </group>
+                        <group>
+                            <field name="all_employee" readonly="state == 'locked'"/>
+                            <field name="employee_ids" widget="many2many_tags" invisible="all_employee" readonly="state == 'locked'"/>
+                            <field name="total_employees"/>
+                            <field name="total_gross_salary"/>
+                            <field name="total_net_pay"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Tab 1: Payroll Sheet Editor (In-UI XLSX Editor) -->
+                        <page string="Payroll Sheet Editor">
+                            <field name="line_ids" readonly="state == 'locked'">
+                                <list editable="bottom" create="true" delete="true">
+                                    <field name="sr_no" width="40px"/>
+                                    <field name="employee_code"/>
+                                    <field name="employee_name"/>
+                                    <field name="department_name"/>
+                                    <field name="pay_days"/>
+                                    <field name="month_days"/>
+                                    <field name="ctc"/>
+                                    <field name="basic"/>
+                                    <field name="hra"/>
+                                    <field name="total_salary"/>
+                                    <field name="incentive"/>
+                                    <field name="gross_salary"/>
+                                    <field name="pt"/>
+                                    <field name="pf"/>
+                                    <field name="lwf"/>
+                                    <field name="bonus"/>
+                                    <field name="it"/>
+                                    <field name="staff_loan"/>
+                                    <field name="cash_advance"/>
+                                    <field name="other_deduction"/>
+                                    <field name="safety_equipment"/>
+                                    <field name="salary_paid"/>
+                                    <field name="net_pay" sum="Total Net Pay"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- Tab 2: Attendance Grid (1-31) -->
+                        <page string="Attendance Grid (1-31)">
+                            <field name="line_ids" readonly="state == 'locked'">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="sr_no" width="40px"/>
+                                    <field name="employee_code"/>
+                                    <field name="employee_name"/>
+                                    <field name="day_1"/>
+                                    <field name="day_2"/>
+                                    <field name="day_3"/>
+                                    <field name="day_4"/>
+                                    <field name="day_5"/>
+                                    <field name="day_6"/>
+                                    <field name="day_7"/>
+                                    <field name="day_8"/>
+                                    <field name="day_9"/>
+                                    <field name="day_10"/>
+                                    <field name="day_11"/>
+                                    <field name="day_12"/>
+                                    <field name="day_13"/>
+                                    <field name="day_14"/>
+                                    <field name="day_15"/>
+                                    <field name="day_16"/>
+                                    <field name="day_17"/>
+                                    <field name="day_18"/>
+                                    <field name="day_19"/>
+                                    <field name="day_20"/>
+                                    <field name="day_21"/>
+                                    <field name="day_22"/>
+                                    <field name="day_23"/>
+                                    <field name="day_24"/>
+                                    <field name="day_25"/>
+                                    <field name="day_26"/>
+                                    <field name="day_27"/>
+                                    <field name="day_28"/>
+                                    <field name="day_29"/>
+                                    <field name="day_30"/>
+                                    <field name="day_31"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- Tab 3: Overtime Grid (1-31) -->
+                        <page string="Overtime Grid (1-31)">
+                            <field name="line_ids" readonly="state == 'locked'">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="sr_no" width="40px"/>
+                                    <field name="employee_code"/>
+                                    <field name="employee_name"/>
+                                    <field name="ot_hours" sum="Total OT"/>
+                                    <field name="ot_day_1"/>
+                                    <field name="ot_day_2"/>
+                                    <field name="ot_day_3"/>
+                                    <field name="ot_day_4"/>
+                                    <field name="ot_day_5"/>
+                                    <field name="ot_day_6"/>
+                                    <field name="ot_day_7"/>
+                                    <field name="ot_day_8"/>
+                                    <field name="ot_day_9"/>
+                                    <field name="ot_day_10"/>
+                                    <field name="ot_day_11"/>
+                                    <field name="ot_day_12"/>
+                                    <field name="ot_day_13"/>
+                                    <field name="ot_day_14"/>
+                                    <field name="ot_day_15"/>
+                                    <field name="ot_day_16"/>
+                                    <field name="ot_day_17"/>
+                                    <field name="ot_day_18"/>
+                                    <field name="ot_day_19"/>
+                                    <field name="ot_day_20"/>
+                                    <field name="ot_day_21"/>
+                                    <field name="ot_day_22"/>
+                                    <field name="ot_day_23"/>
+                                    <field name="ot_day_24"/>
+                                    <field name="ot_day_25"/>
+                                    <field name="ot_day_26"/>
+                                    <field name="ot_day_27"/>
+                                    <field name="ot_day_28"/>
+                                    <field name="ot_day_29"/>
+                                    <field name="ot_day_30"/>
+                                    <field name="ot_day_31"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- Tab 4: Employee & Bank Master Info -->
+                        <page string="Employee &amp; Bank Details">
+                            <field name="line_ids" readonly="state == 'locked'">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="sr_no" width="40px"/>
+                                    <field name="employee_code"/>
+                                    <field name="employee_name"/>
+                                    <field name="father_name"/>
+                                    <field name="mobile_no"/>
+                                    <field name="dob"/>
+                                    <field name="doj"/>
+                                    <field name="department_name"/>
+                                    <field name="designation_name"/>
+                                    <field name="sbi_ac"/>
+                                    <field name="sbi_ifsc"/>
+                                    <field name="hdfc_ac"/>
+                                    <field name="hdfc_ifsc"/>
+                                    <field name="uan_no"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Detail Form View for salary.report.line.2 -->
+    <record id="view_salary_report_line_2_form" model="ir.ui.view">
+        <field name="name">salary.report.line.2.form</field>
+        <field name="model">salary.report.line.2</field>
+        <field name="arch" type="xml">
+            <form string="Salary Report Employee Line">
+                <sheet>
+                    <group>
+                        <group string="Employee Info">
+                            <field name="employee_id"/>
+                            <field name="employee_code"/>
+                            <field name="employee_name"/>
+                            <field name="father_name"/>
+                            <field name="mobile_no"/>
+                            <field name="department_name"/>
+                            <field name="designation_name"/>
+                            <field name="dob"/>
+                            <field name="doj"/>
+                        </group>
+                        <group string="Bank &amp; Statutory">
+                            <field name="sbi_ac"/>
+                            <field name="sbi_ifsc"/>
+                            <field name="hdfc_ac"/>
+                            <field name="hdfc_ifsc"/>
+                            <field name="uan_no"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Earnings &amp; Pay">
+                            <field name="ctc"/>
+                            <field name="basic_spec"/>
+                            <field name="hra_spec"/>
+                            <field name="pay_days"/>
+                            <field name="month_days"/>
+                            <field name="basic"/>
+                            <field name="hra"/>
+                            <field name="total_salary"/>
+                            <field name="incentive"/>
+                            <field name="gross_salary"/>
+                        </group>
+                        <group string="Deductions &amp; Additions">
+                            <field name="pt"/>
+                            <field name="pf"/>
+                            <field name="lwf"/>
+                            <field name="bonus"/>
+                            <field name="it"/>
+                            <field name="staff_loan"/>
+                            <field name="cash_advance"/>
+                            <field name="other_deduction"/>
+                            <field name="safety_equipment"/>
+                            <field name="salary_paid"/>
+                            <field name="net_pay"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Main Persistent Action for Monthly Salary Reports -->
+    <record id="action_salary_report_2_main" model="ir.actions.act_window">
+        <field name="name">Monthly Salary Sheets</field>
+        <field name="res_model">salary.report.2</field>
+        <field name="view_mode">list,form</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Launcher Wizard Action -->
+    <record id="action_salary_report_wizard_2" model="ir.actions.act_window">
+        <field name="name">Generate New Salary Sheet</field>
+        <field name="res_model">salary.report.wizard.2</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(6, 0, [ref('hr_payroll.group_hr_payroll_manager')])]"/>
+    </record>
+
+    <!-- Root Menu -->
+    <menuitem id="menu_salary_report_2_root"
+              name="Salary Report 2.0"
+              sequence="196"
+              web_icon="salary_report_2,static/description/icon.png"
+              groups="hr_payroll.group_hr_payroll_manager"/>
+
+    <!-- Menu 1: Monthly Salary Sheets (Main Persistent Records) -->
+    <menuitem id="menu_salary_report_2_list"
+              name="Monthly Salary Sheets"
+              parent="menu_salary_report_2_root"
+              action="action_salary_report_2_main"
+              sequence="10"
+              groups="hr_payroll.group_hr_payroll_manager"/>
+
+    <!-- Menu 2: Generate New Salary Sheet (Wizard) -->
+    <menuitem id="menu_salary_report_2_new"
+              name="Generate New Sheet"
+              parent="menu_salary_report_2_root"
+              action="action_salary_report_wizard_2"
+              sequence="20"
+              groups="hr_payroll.group_hr_payroll_manager"/>
+
+</odoo>
