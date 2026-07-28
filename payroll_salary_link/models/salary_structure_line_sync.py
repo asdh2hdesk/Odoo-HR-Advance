@@ -108,38 +108,33 @@ class SalaryConfigStructureLine(models.Model):
             'condition_range_max': 0.0,
             'note': self._build_salary_rule_note(),
         })
+        code = (self.code or '').strip()
         compute_mode = self.compute_mode or 'formula'
         if compute_mode == 'percent_yearly':
-            code = self.code or ''
             pct = (self.value or 0.0) / 100.0
-            python_code = f"result = contract.get_salary_breakdown_amount('{code}') or (contract.wage * {pct})" if code else f"result = contract.wage * {pct}"
-            vals.update({
-                'amount_select': 'code',
-                'amount_fix': 0.0,
-                'amount_percentage': 0.0,
-                'amount_python_compute': python_code,
-                'amount_percentage_base': False,
-            })
+            fallback_expr = f"(contract.wage or 0.0) * {pct}"
         elif compute_mode == 'fixed_monthly':
-            code = self.code or ''
             fix_val = self.value or 0.0
-            python_code = f"result = contract.get_salary_breakdown_amount('{code}') or {fix_val}" if code else f"result = {fix_val}"
-            vals.update({
-                'amount_select': 'code',
-                'amount_fix': 0.0,
-                'amount_percentage': 0.0,
-                'amount_python_compute': python_code,
-                'amount_percentage_base': False,
-            })
+            fallback_expr = f"{fix_val}"
         else:
             code_expr = self._adapt_python_code_for_payroll_rule()
-            vals.update({
-                'amount_select': 'code',
-                'amount_fix': 0.0,
-                'amount_percentage': 0.0,
-                'amount_python_compute': code_expr,
-                'amount_percentage_base': False,
-            })
+            if code_expr.startswith('result ='):
+                fallback_expr = code_expr[len('result ='):].strip()
+            else:
+                fallback_expr = code_expr.strip()
+
+        if code:
+            python_code = f"val = contract.get_salary_breakdown_amount('{code}')\nresult = val if val else ({fallback_expr})"
+        else:
+            python_code = f"result = {fallback_expr}"
+
+        vals.update({
+            'amount_select': 'code',
+            'amount_fix': 0.0,
+            'amount_percentage': 0.0,
+            'amount_python_compute': python_code,
+            'amount_percentage_base': False,
+        })
         return vals
 
     def _build_salary_rule_note(self):
