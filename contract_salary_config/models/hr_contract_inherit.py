@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 from markupsafe import Markup
 
 
@@ -276,6 +277,24 @@ class HrContract(models.Model):
         """Button action to recompute all salary line amounts."""
         self._recompute_structure_line_amounts()
         return True
+
+
+    def action_set_to_running(self):
+        """Action invoked from Contracts list view (Actions menu) to set selected draft contracts to Running ('open') state."""
+        draft_contracts = self.filtered(lambda c: c.state == 'draft')
+        if not draft_contracts:
+            raise UserError(_("No contracts in 'New' (Draft) state were selected."))
+        draft_contracts.write({'state': 'open'})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Contracts Updated'),
+                'message': _('%d contract(s) set to Running state!') % len(draft_contracts),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
 
 class HrContractSalaryStructureLine(models.Model):
