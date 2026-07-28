@@ -110,19 +110,25 @@ class SalaryConfigStructureLine(models.Model):
         })
         compute_mode = self.compute_mode or 'formula'
         if compute_mode == 'percent_yearly':
+            code = self.code or ''
+            pct = (self.value or 0.0) / 100.0
+            python_code = f"result = contract.get_salary_breakdown_amount('{code}') or (contract.wage * {pct})" if code else f"result = contract.wage * {pct}"
             vals.update({
-                'amount_select': 'percentage',
-                'amount_percentage': self.value or 0.0,
+                'amount_select': 'code',
                 'amount_fix': 0.0,
-                'amount_python_compute': False,
-                'amount_percentage_base': vals.get('amount_percentage_base') or 'contract.wage',
+                'amount_percentage': 0.0,
+                'amount_python_compute': python_code,
+                'amount_percentage_base': False,
             })
         elif compute_mode == 'fixed_monthly':
+            code = self.code or ''
+            fix_val = self.value or 0.0
+            python_code = f"result = contract.get_salary_breakdown_amount('{code}') or {fix_val}" if code else f"result = {fix_val}"
             vals.update({
-                'amount_select': 'fix',
-                'amount_fix': self.value or 0.0,
+                'amount_select': 'code',
+                'amount_fix': 0.0,
                 'amount_percentage': 0.0,
-                'amount_python_compute': False,
+                'amount_python_compute': python_code,
                 'amount_percentage_base': False,
             })
         else:

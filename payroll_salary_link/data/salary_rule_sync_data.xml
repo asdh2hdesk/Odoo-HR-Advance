@@ -11,12 +11,12 @@
             <field name="condition_python">result = True</field>
             <field name="condition_range_min">0.0</field>
             <field name="condition_range_max">0.0</field>
-            <field name="amount_select">percentage</field>
+            <field name="amount_select">code</field>
             <field name="amount_fix">0.0</field>
-            <field name="amount_percentage">50.0</field>
-            <field name="amount_percentage_base">contract.wage</field>
-            <field name="amount_python_compute"/>
-            <field name="note">Synced from salary_config demo structure.</field>
+            <field name="amount_percentage">0.0</field>
+            <field name="amount_percentage_base"/>
+            <field name="amount_python_compute">result = contract.get_salary_breakdown_amount('BASIC') or (contract.wage * 0.5)</field>
+            <field name="note">Synced from salary_config breakdown with fallback to default 50% of wage.</field>
         </record>
 
         <!-- <record id="hr_payroll.hr_rule_hra" model="hr.salary.rule">
