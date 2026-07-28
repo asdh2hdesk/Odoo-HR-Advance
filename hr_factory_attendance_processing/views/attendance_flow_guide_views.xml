@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Client Action for OWL JS Flow Guide Dashboard -->
+    <record id="action_factory_attendance_flow_guide" model="ir.actions.client">
+        <field name="name">Factory Attendance Workflow &amp; Guide</field>
+        <field name="tag">hr_factory_attendance_flow_guide</field>
+    </record>
+
+    <!-- Menu Item in HR Attendance -->
+    <menuitem id="menu_factory_attendance_flow_guide"
+              name="Workflow &amp; How It Works"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="action_factory_attendance_flow_guide"
+              sequence="1"/>
+</odoo>

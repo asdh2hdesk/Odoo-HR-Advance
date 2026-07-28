@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="attendance_processor_wizard_view_form" model="ir.ui.view">
+        <field name="name">attendance.processor.wizard.view.form</field>
+        <field name="model">attendance.processor.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Batch Attendance Processor">
+                <sheet>
+                    <group>
+                        <group string="Scope &amp; Period">
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="Target Scope">
+                            <field name="department_id"/>
+                            <field name="employee_ids" widget="many2many_tags" placeholder="All Employees in Company if blank..."/>
+                        </group>
+                    </group>
+                    <group string="Pipeline Options">
+                        <group>
+                            <field name="auto_approve"/>
+                            <field name="auto_generate_work_entries"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_process" string="Process Attendance" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="attendance_processor_wizard_action" model="ir.actions.act_window">
+        <field name="name">Process Biometric Attendance</field>
+        <field name="res_model">attendance.processor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_attendance_processor_wizard"
+              name="Process Biometric Attendance"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="attendance_processor_wizard_action"
+              sequence="8"/>
+</odoo>

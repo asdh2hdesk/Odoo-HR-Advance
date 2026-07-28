@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="hr_factory_attendance_processing.AttendanceFlowDashboard">
+        <div class="o_factory_flow_guide">
+            <!-- Header Section -->
+            <div class="o_factory_flow_header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h1>⚙️ Factory Attendance &amp; Payroll Pipeline</h1>
+                        <p class="text-light mb-0 opacity-75">
+                            Biometric Punch Source of Truth → Daily Summary Grid → Work Entries → Payroll Engine
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-sm px-3" t-on-click="openWizard">
+                            <i class="fa fa-play me-1"/> Process Attendance
+                        </button>
+                        <button class="btn btn-outline-light btn-sm px-3" t-on-click="openDailySummaries">
+                            <i class="fa fa-list me-1"/> Daily Summaries
+                        </button>
+                        <button class="btn btn-outline-light btn-sm px-3" t-on-click="openSettings">
+                            <i class="fa fa-cog me-1"/> Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Stepper -->
+            <div class="o_factory_pipeline">
+                <div t-attf-class="o_pipeline_step #{state.activeStep === 1 ? 'active' : ''}" t-on-click="() => this.setStep(1)">
+                    <span class="o_step_badge">1</span>
+                    <div class="o_step_title">Biometric Punches</div>
+                    <small class="text-muted">hr.attendance</small>
+                </div>
+                <div t-attf-class="o_pipeline_step #{state.activeStep === 2 ? 'active' : ''}" t-on-click="() => this.setStep(2)">
+                    <span class="o_step_badge">2</span>
+                    <div class="o_step_title">Contract Reference</div>
+                    <small class="text-muted">resource.calendar</small>
+                </div>
+                <div t-attf-class="o_pipeline_step #{state.activeStep === 3 ? 'active' : ''}" t-on-click="() => this.setStep(3)">
+                    <span class="o_step_badge">3</span>
+                    <div class="o_step_title">Interval Processing</div>
+                    <small class="text-muted">SUM(check_out - check_in)</small>
+                </div>
+                <div t-attf-class="o_pipeline_step #{state.activeStep === 4 ? 'active' : ''}" t-on-click="() => this.setStep(4)">
+                    <span class="o_step_badge">4</span>
+                    <div class="o_step_title">Daily Summary Review</div>
+                    <small class="text-muted">Draft → Approved</small>
+                </div>
+                <div t-attf-class="o_pipeline_step #{state.activeStep === 5 ? 'active' : ''}" t-on-click="() => this.setStep(5)">
+                    <span class="o_step_badge">5</span>
+                    <div class="o_step_title">Work Entries</div>
+                    <small class="text-muted">hr.work.entry</small>
+                </div>
+                <div t-attf-class="o_pipeline_step #{state.activeStep === 6 ? 'active' : ''}" t-on-click="() => this.setStep(6)">
+                    <span class="o_step_badge">6</span>
+                    <div class="o_step_title">Payroll Engine</div>
+                    <small class="text-muted">hr.payslip</small>
+                </div>
+            </div>
+
+            <!-- Flow Content Grid -->
+            <div class="o_flow_content_grid">
+                <!-- Step Explanation Card -->
+                <div class="o_flow_card">
+                    <div class="o_card_title">
+                        <span>Step <t t-esc="state.activeStep"/> Details</span>
+                    </div>
+
+                    <t t-if="state.activeStep === 1">
+                        <div class="o_rule_box">
+                            <strong>Biometric Device Integration</strong><br/>
+                            ZK, Starlink, or Face Recognition devices sync IN/OUT punches into <code>hr.attendance</code>. Attendance records store raw check-in and check-out timestamps.
+                        </div>
+                        <ul>
+                            <li>Primary source of truth for actual worked hours.</li>
+                            <li>Supports multiple punch pairs on the same day (e.g. lunch breaks).</li>
+                            <li>Supports cross-midnight night shifts (e.g. 18:00 to 06:00).</li>
+                        </ul>
+                    </t>
+
+                    <t t-if="state.activeStep === 2">
+                        <div class="o_rule_box">
+                            <strong>Contract &amp; Calendar Reference</strong><br/>
+                            Each employee's contract (<code>hr.contract</code>) links to a <code>resource.calendar</code>. The calendar serves strictly as a reference for <strong>Expected Hours</strong> (8h/10h/12h) and <strong>Weekly Off Day</strong> (e.g. Sunday Off).
+                        </div>
+                        <ul>
+                            <li>No fixed shift rosters required in the system!</li>
+                            <li>Shifts are managed operationally by factory managers on the floor.</li>
+                            <li>Single source of truth for weekly off days.</li>
+                        </ul>
+                    </t>
+
+                    <t t-if="state.activeStep === 3">
+                        <div class="o_rule_box">
+                            <strong>Processor Engine Calculation</strong><br/>
+                            The engine calculates total worked hours by summing actual attendance intervals: <code>SUM(check_out - check_in)</code>.
+                        </div>
+                        <ul>
+                            <li><strong>Normal Day:</strong> Regular = min(Worked, Expected), OT = max(0, Worked - Expected).</li>
+                            <li><strong>Weekly Off Worked:</strong> 100% Overtime (Regular = 0, OT = Worked).</li>
+                            <li><strong>Public Holiday Worked:</strong> 100% Holiday Overtime.</li>
+                        </ul>
+                    </t>
+
+                    <t t-if="state.activeStep === 4">
+                        <div class="o_rule_box">
+                            <strong>HR Intermediate Summary Grid</strong><br/>
+                            Creates <code>attendance.daily.summary</code> records. HR Officers review, edit, or batch-approve summaries before generating work entries.
+                        </div>
+                        <ul>
+                            <li>Workflow States: <code>Draft</code> → <code>Calculated</code> → <code>Approved</code> → <code>Locked</code>.</li>
+                            <li>Quick filters for Overtime, Shortage, and Weekly Off Worked.</li>
+                        </ul>
+                    </t>
+
+                    <t t-if="state.activeStep === 5">
+                        <div class="o_rule_box">
+                            <strong>Work Entry Generation</strong><br/>
+                            Generates standard <code>hr.work.entry</code> records (<code>WORK100</code>, <code>OVERTIME</code>, <code>UNPAID</code>, <code>LEAVE114</code>).
+                        </div>
+                        <ul>
+                            <li>Work entries inherit actual punch timestamps.</li>
+                            <li>Decoupled from low-level storage overrides for system upgrade stability.</li>
+                        </ul>
+                    </t>
+
+                    <t t-if="state.activeStep === 6">
+                        <div class="o_rule_box">
+                            <strong>Payroll Computation</strong><br/>
+                            When payslips (<code>hr.payslip</code>) are computed, the Payroll System automatically fetches the generated work entries for Basic, OT, and Deduction calculations.
+                        </div>
+                        <ul>
+                            <li>Zero manual entry required by Payroll Accountants.</li>
+                        </ul>
+                    </t>
+                </div>
+
+                <!-- Interactive Calculation Simulator -->
+                <div class="o_flow_card">
+                    <div class="o_card_title">
+                        <span>🧮 Interactive Hours Simulator</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Day Classification</label>
+                        <select class="form-select" t-on-change="(ev) => this.onSimParamChange(ev, 'simDayType')">
+                            <option value="working_day" selected="selected">Normal Working Day</option>
+                            <option value="weekoff">Weekly Off Day (e.g. Sunday)</option>
+                            <option value="public_holiday">Public Holiday</option>
+                            <option value="leave">Approved Leave</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">Expected Hours</label>
+                            <input type="number" class="form-control" value="8.0" step="0.5" t-on-input="(ev) => this.onSimParamChange(ev, 'simExpectedHours')"/>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">Worked Hours (SUM)</label>
+                            <input type="number" class="form-control" value="11.0" step="0.5" t-on-input="(ev) => this.onSimParamChange(ev, 'simWorkedHours')"/>
+                        </div>
+                    </div>
+
+                    <div class="o_sim_result">
+                        <div class="o_sim_metric">
+                            <small class="text-muted d-block">Regular Hours</small>
+                            <span class="o_sim_val o_metric_green"><t t-esc="state.calcRegular.toFixed(1)"/> h</span>
+                        </div>
+                        <div class="o_sim_metric">
+                            <small class="text-muted d-block">Overtime Hours</small>
+                            <span class="o_sim_val o_metric_red"><t t-esc="state.calcOT.toFixed(1)"/> h</span>
+                        </div>
+                        <div class="o_sim_metric">
+                            <small class="text-muted d-block">Shortage Hours</small>
+                            <span class="o_sim_val o_metric_amber"><t t-esc="state.calcShortage.toFixed(1)"/> h</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

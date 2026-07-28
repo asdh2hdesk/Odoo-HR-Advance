@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Daily Attendance Summary Form View -->
+    <record id="attendance_daily_summary_view_form" model="ir.ui.view">
+        <field name="name">attendance.daily.summary.view.form</field>
+        <field name="model">attendance.daily.summary</field>
+        <field name="arch" type="xml">
+            <form string="Daily Attendance Summary">
+                <header>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state not in ['draft', 'calculated']"/>
+                    <button name="action_lock_and_generate_work_entries" string="Generate Work Entries &amp; Lock" type="object" class="oe_highlight" invisible="state in ['locked']"/>
+                    <button name="action_recalculate" string="Recalculate Summary" type="object" invisible="state in ['locked']"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,calculated,approved,locked"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_work_entries" type="object" class="oe_stat_button" icon="fa-calendar" invisible="work_entry_count == 0">
+                            <field name="work_entry_count" widget="statinfo" string="Work Entries"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Employee &amp; Date Info">
+                            <field name="employee_id" readonly="state == 'locked'"/>
+                            <field name="contract_id" readonly="state == 'locked'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="date" readonly="state == 'locked'"/>
+                            <field name="day_type" widget="badge" readonly="state == 'locked'"/>
+                        </group>
+                        <group string="Time Punch Bounds">
+                            <field name="first_in"/>
+                            <field name="last_out"/>
+                        </group>
+                    </group>
+                    <group string="Hours Analysis">
+                        <group>
+                            <field name="expected_hours" widget="float_time"/>
+                            <field name="worked_hours" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="regular_hours" widget="float_time"/>
+                            <field name="ot_hours" widget="float_time" decoration-danger="ot_hours &gt; 0"/>
+                            <field name="shortage_hours" widget="float_time" decoration-warning="shortage_hours &gt; 0"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Biometric Punch Intervals" name="attendances">
+                            <field name="attendance_ids" readonly="state == 'locked'">
+                                <list string="Attendances">
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+                                    <field name="worked_hours" widget="float_time"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Generated Work Entries" name="work_entries" invisible="work_entry_count == 0">
+                            <field name="work_entry_ids" readonly="1">
+                                <list string="Work Entries">
+                                    <field name="name"/>
+                                    <field name="work_entry_type_id"/>
+                                    <field name="date_start"/>
+                                    <field name="date_stop"/>
+                                    <field name="duration" widget="float_time"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="HR Notes" name="notes">
+                            <field name="notes" placeholder="Enter optional HR notes or review comments..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Daily Attendance Summary Tree View -->
+    <record id="attendance_daily_summary_view_tree" model="ir.ui.view">
+        <field name="name">attendance.daily.summary.view.list</field>
+        <field name="model">attendance.daily.summary</field>
+        <field name="arch" type="xml">
+            <list string="Daily Attendance Summaries" multi_edit="1" sample="1">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="day_type" widget="badge" 
+                       decoration-success="day_type == 'working_day'" 
+                       decoration-info="day_type in ['weekoff', 'public_holiday']"
+                       decoration-warning="day_type in ['leave', 'half_day']"
+                       decoration-danger="day_type == 'absent'"/>
+                <field name="first_in"/>
+                <field name="last_out"/>
+                <field name="expected_hours" widget="float_time" sum="Total Expected"/>
+                <field name="worked_hours" widget="float_time" sum="Total Worked"/>
+                <field name="regular_hours" widget="float_time" sum="Total Regular"/>
+                <field name="ot_hours" widget="float_time" sum="Total OT" decoration-danger="ot_hours &gt; 0"/>
+                <field name="shortage_hours" widget="float_time" sum="Total Shortage" decoration-warning="shortage_hours &gt; 0"/>
+                <field name="state" widget="badge" 
+                       decoration-muted="state == 'draft'" 
+                       decoration-info="state == 'calculated'"
+                       decoration-warning="state == 'approved'"
+                       decoration-success="state == 'locked'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Daily Attendance Summary Pivot View -->
+    <record id="attendance_daily_summary_view_pivot" model="ir.ui.view">
+        <field name="name">attendance.daily.summary.view.pivot</field>
+        <field name="model">attendance.daily.summary</field>
+        <field name="arch" type="xml">
+            <pivot string="Attendance Analysis">
+                <field name="date" type="row" interval="month"/>
+                <field name="day_type" type="col"/>
+                <field name="worked_hours" type="measure"/>
+                <field name="regular_hours" type="measure"/>
+                <field name="ot_hours" type="measure"/>
+                <field name="shortage_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Daily Attendance Summary Search View -->
+    <record id="attendance_daily_summary_view_search" model="ir.ui.view">
+        <field name="name">attendance.daily.summary.view.search</field>
+        <field name="model">attendance.daily.summary</field>
+        <field name="arch" type="xml">
+            <search string="Search Summaries">
+                <field name="employee_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="date"/>
+                <field name="day_type"/>
+                <field name="state"/>
+                <separator/>
+                <filter string="Calculated (Needs Approval)" name="filter_calculated" domain="[('state', '=', 'calculated')]"/>
+                <filter string="Approved" name="filter_approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="Locked" name="filter_locked" domain="[('state', '=', 'locked')]"/>
+                <separator/>
+                <filter string="With Overtime (> 0)" name="filter_ot" domain="[('ot_hours', '>', 0)]"/>
+                <filter string="With Shortage (> 0)" name="filter_shortage" domain="[('shortage_hours', '>', 0)]"/>
+                <filter string="Weekly Off Worked" name="filter_weekoff_worked" domain="[('day_type', '=', 'weekoff'), ('worked_hours', '>', 0)]"/>
+                <filter string="Absent" name="filter_absent" domain="[('day_type', '=', 'absent')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date:month'}"/>
+                    <filter string="Day Classification" name="group_day_type" context="{'group_by': 'day_type'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Daily Attendance Summary -->
+    <record id="attendance_daily_summary_action" model="ir.actions.act_window">
+        <field name="name">Daily Attendance Summaries</field>
+        <field name="res_model">attendance.daily.summary</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="search_view_id" ref="attendance_daily_summary_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No daily attendance summaries found!
+            </p>
+            <p>
+                Run the Attendance Processor Wizard to generate daily summaries from biometric attendance punches.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item in HR Attendance Root -->
+    <menuitem id="menu_attendance_daily_summary"
+              name="Daily Attendance Summaries"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="attendance_daily_summary_action"
+              sequence="7"/>
+</odoo>

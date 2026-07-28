@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_factory_attendance" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.factory.attendance</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="hr_attendance.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='hr_attendance']" position="inside">
+                <block title="Factory Biometric Attendance Processing" id="factory_attendance_settings">
+                    <setting help="Enable OT calculation for hours worked beyond standard calendar hours.">
+                        <field name="factory_ot_start_after_standard"/>
+                    </setting>
+                    <setting help="Grace time in minutes before shortage hours are flagged.">
+                        <field name="factory_grace_time_minutes"/>
+                    </setting>
+                    <setting help="Default policy for handling work duration shortages.">
+                        <field name="factory_shortage_policy"/>
+                    </setting>
+                    <setting help="Automatically generate work entries when daily summary is approved.">
+                        <field name="factory_auto_generate_work_entries"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
