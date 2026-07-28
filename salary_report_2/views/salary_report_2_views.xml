@@ -272,11 +272,37 @@
         </field>
     </record>
 
+    <!-- Search View for salary.report.2 -->
+    <record id="view_salary_report_2_search" model="ir.ui.view">
+        <field name="name">salary.report.2.search</field>
+        <field name="model">salary.report.2</field>
+        <field name="arch" type="xml">
+            <search string="Search Monthly Salary Reports">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="state"/>
+                <separator/>
+                <filter string="Draft" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Calculated" name="filter_calculated" domain="[('state', '=', 'calculated')]"/>
+                <filter string="Locked" name="filter_locked" domain="[('state', '=', 'locked')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date_from:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <!-- Main Persistent Action for Monthly Salary Reports -->
     <record id="action_salary_report_2_main" model="ir.actions.act_window">
         <field name="name">Monthly Salary Sheets</field>
         <field name="res_model">salary.report.2</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_salary_report_2_search"/>
         <field name="target">current</field>
     </record>
 

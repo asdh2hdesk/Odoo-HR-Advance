@@ -16,6 +16,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "security/salary_report_2_security.xml",
         "views/salary_report_wizard_2_views.xml",
         "views/salary_report_2_views.xml",
     ],

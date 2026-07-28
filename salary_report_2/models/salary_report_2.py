@@ -21,7 +21,8 @@ class SalaryReport2(models.Model):
         required=True,
         default=lambda self: self.env.company,
         readonly=True,
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
+        index=True,
     )
     date_from = fields.Date(string="From Date", required=True)
     date_to = fields.Date(string="To Date", required=True)
@@ -849,6 +850,14 @@ class SalaryReportLine2(models.Model):
 
     report_id = fields.Many2one(
         "salary.report.2", string="Salary Report", required=True, ondelete="cascade"
+    )
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        related="report_id.company_id",
+        store=True,
+        readonly=True,
+        index=True,
     )
     sr_no = fields.Integer(string="No")
     employee_id = fields.Many2one("hr.employee", string="Employee", context={'active_test': False})
