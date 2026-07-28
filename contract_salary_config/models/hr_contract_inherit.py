@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
+from markupsafe import Markup
 
 
 class HrContract(models.Model):
@@ -49,6 +50,7 @@ class HrContract(models.Model):
         compute='_compute_inhand_salary',
         store=True,
         help='Monthly In Hand Salary derived from the INHAND line.',
+        tracking=True,
     )
     gross_salary = fields.Monetary(
         string='Gross Salary',
@@ -56,6 +58,7 @@ class HrContract(models.Model):
         compute='_compute_gross_salary',
         store=True,
         help='Monthly Gross Salary derived from the GROSS line.',
+        tracking=True,
     )
     current_company_name = fields.Char(
         string="Current Company",
@@ -183,10 +186,72 @@ class HrContract(models.Model):
         return records
 
     def write(self, vals):
+        # Capture old line values before write
+        old_data = {}
+        for contract in self:
+            old_data[contract.id] = {
+                line.id: {
+                    'name': line.name or '',
+                    'code': line.code or '',
+                    'value': line.value or 0.0,
+                    'compute_mode': line.compute_mode or '',
+                    'amount_monthly': line.amount_monthly or 0.0,
+                }
+                for line in contract.salary_structure_line_ids
+            }
+
         res = super().write(vals)
+
         # Recompute line amounts when CTC, bonus, PF deduct, or structure changes
         if 'final_yearly_costs' in vals or 'bonus_amount' in vals or 'is_pf_deduct' in vals or 'salary_structure_line_ids' in vals:
             self._recompute_structure_line_amounts()
+
+        # Track line-level changes in chatter
+        for contract in self:
+            old_lines = old_data.get(contract.id, {})
+            new_lines = {
+                line.id: {
+                    'name': line.name or '',
+                    'code': line.code or '',
+                    'value': line.value or 0.0,
+                    'compute_mode': line.compute_mode or '',
+                    'amount_monthly': line.amount_monthly or 0.0,
+                }
+                for line in contract.salary_structure_line_ids
+            }
+
+            changes = []
+            symbol = (contract.currency_id.symbol + ' ') if contract.currency_id and contract.currency_id.symbol else ''
+            fmt = lambda amt: f"{symbol}{amt:,.2f}"
+
+            # Check modified lines and deleted lines
+            for l_id, old_l in old_lines.items():
+                if l_id in new_lines:
+                    new_l = new_lines[l_id]
+                    line_changes = []
+                    if abs(old_l['value'] - new_l['value']) > 0.001:
+                        line_changes.append(_("Value / %%: %s → %s") % (old_l['value'], new_l['value']))
+                    if abs(old_l['amount_monthly'] - new_l['amount_monthly']) > 0.01:
+                        line_changes.append(_("Monthly Amount: %s → %s") % (fmt(old_l['amount_monthly']), fmt(new_l['amount_monthly'])))
+                    if old_l['compute_mode'] != new_l['compute_mode']:
+                        line_changes.append(_("Compute Mode: %s → %s") % (old_l['compute_mode'], new_l['compute_mode']))
+                    if old_l['name'] != new_l['name']:
+                        line_changes.append(_("Name: %s → %s") % (old_l['name'], new_l['name']))
+
+                    if line_changes:
+                        changes.append("<li><b>%s</b>: %s</li>" % (new_l['name'], ", ".join(line_changes)))
+                else:
+                    changes.append("<li><b>%s</b>: <i>Component Removed</i></li>" % old_l['name'])
+
+            # Check added lines
+            for l_id, new_l in new_lines.items():
+                if l_id not in old_lines:
+                    changes.append("<li><b>%s</b>: <i>Component Added</i> (Value: %s, Monthly: %s)</li>" % (new_l['name'], new_l['value'], fmt(new_l['amount_monthly'])))
+
+            if changes:
+                body = "<p><b>Salary Component Changes:</b></p><ul>%s</ul>" % "".join(changes)
+                contract.message_post(body=Markup(body))
+
         return res
 
     def action_refresh_salary_structure(self):
@@ -300,7 +365,7 @@ class HrContractSalaryStructureLine(models.Model):
             amounts_by_code = {
                 l.code: float(l.amount_monthly or 0.0)
                 for l in all_lines
-                if l.code and l.id != self.id
+                if l.code and l != self
             }
 
             localdict = {
@@ -325,17 +390,17 @@ class HrContractSalaryStructureLine(models.Model):
                 'sum_cost': sum(
                     float(l.amount_monthly or 0.0)
                     for l in all_lines
-                    if l.id != self.id and l.impact == 'cost'
+                    if l != self and l.impact == 'cost'
                 ),
                 'sum_benefit': sum(
                     float(l.amount_monthly or 0.0)
                     for l in all_lines
-                    if l.id != self.id and l.impact == 'benefit'
+                    if l != self and l.impact == 'benefit'
                 ),
                 'sum_deduction': sum(
                     float(l.amount_monthly or 0.0)
                     for l in all_lines
-                    if l.id != self.id and l.impact == 'deduction'
+                    if l != self and l.impact == 'deduction'
                 ),
                 'result': 0.0,
             }
