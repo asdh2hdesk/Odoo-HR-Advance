@@ -6,7 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 
 export class HrPayrollDashboard extends Component {
     static template = "hr_payroll_dashboard.HrPayrollDashboard";
-    static props = {};
+    static props = ["*"];
 
     setup() {
         this.orm = useService("orm");
