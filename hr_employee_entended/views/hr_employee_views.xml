@@ -53,6 +53,8 @@ for record in records:
             </xpath>
 
             <xpath expr="//sheet//field[@name='company_id']" position="after">
+
+                <field name="employee_code"/>
                 <field name="father_name"/>
                 <field name="mother_name"/>
                 <field name="join_date"/>
@@ -297,19 +299,18 @@ for record in records:
         </field>
     </record>
 
-    <record id="view_employee_tree_adding_imp_fields" model="ir.ui.view">
-        <field name="name">hr.employee.tree.inherit.for.adding.important.fields</field>
+    <!-- Inherit Employee Search View to enable search by employee_code -->
+    <record id="view_employee_filter_inherit_employee_code" model="ir.ui.view">
+        <field name="name">hr.employee.search.inherit.employee.code</field>
         <field name="model">hr.employee</field>
-        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
         <field name="arch" type="xml">
-            <!-- <xpath expr="//list" position="attributes">
-                <attribute name="editable">top</attribute>
-            </xpath> -->
-
-            <xpath expr="//list/field[@name='activity_ids']" position="replace">
-                <field name="activity_ids" widget="list_activity" optional="hide"/>
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="filter_domain">['|', '|', ('name', 'ilike', self), ('work_email', 'ilike', self), ('employee_code', 'ilike', self)]</attribute>
             </xpath>
-
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="employee_code" string="Employee Code" filter_domain="[('employee_code', 'ilike', self)]"/>
+            </xpath>
         </field>
     </record>
 

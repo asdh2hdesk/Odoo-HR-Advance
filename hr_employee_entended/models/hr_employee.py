@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.osv import expression
 from odoo.exceptions import ValidationError, UserError
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
@@ -19,8 +20,17 @@ class HrCaste(models.Model):
 class Employee(models.Model):
     _inherit = 'hr.employee'
     _order = "employee_code, id"
+    _rec_names_search = ['name', 'employee_code', 'work_email']
 
     employee_code = fields.Char(string="Employee Code", copy=False, tracking=True, index=True)
+
+    @api.model
+    def _name_search(self, name='', domain=None, operator='ilike', limit=100, order=None):
+        domain = domain or []
+        if name:
+            name_domain = ['|', '|', ('name', operator, name), ('employee_code', operator, name), ('work_email', operator, name)]
+            domain = expression.AND([name_domain, domain])
+        return self._search(domain, limit=limit, order=order)
     has_timesheet = fields.Boolean(groups="hr.group_hr_user,base.group_user,hr_timesheet.group_hr_timesheet_user,base.group_system")
     has_work_entries = fields.Boolean(groups="hr.group_hr_user,base.group_user,base.group_system")
     calendar_mismatch = fields.Boolean(groups="hr.group_hr_user,base.group_user,base.group_system")
