@@ -19,7 +19,7 @@
                         <group string="CTC Summary">
                             <field name="final_yearly_costs" widget="monetary" string="Annual CTC"/>
                             <field name="monthly_yearly_costs" widget="monetary" readonly="1" string="Monthly CTC"/>
-                            <field name="bonus_amount" widget="monetary"/>
+                            <!-- <field name="bonus_amount" widget="monetary"/> -->
                             <field name="is_pf_deduct"/>
                         </group>
                         <group string="Computed Summary">
@@ -161,7 +161,7 @@
                         <group string="CTC Summary">
                             <field name="final_yearly_costs" widget="monetary" string="Annual CTC"/>
                             <field name="monthly_yearly_costs" widget="monetary" readonly="1" string="Monthly CTC"/>
-                            <field name="bonus_amount" widget="monetary"/>
+                            <!-- <field name="bonus_amount" widget="monetary"/> -->
                             <field name="is_pf_deduct"/>
                         </group>
                         <group string="Computed Summary">
