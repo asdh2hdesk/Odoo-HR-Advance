@@ -508,34 +508,12 @@
             <div class="hpd-card-header">
               <h2 class="hpd-card-title">Employees by Department</h2>
             </div>
-            <div style="display:flex;gap:16px;padding:4px 0">
-              <table class="hpd-table" style="flex:1">
+            <div class="hpd-dept-scroll">
+              <table class="hpd-table" style="width:100%">
                 <thead><tr><th>#</th><th>Department</th><th>Employees</th></tr></thead>
                 <tbody>
                   <t t-foreach="state.data.extra.dept_distribution" t-as="dept" t-key="dept.name">
-                    <t t-if="dept_index % 3 === 0">
-                      <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
-                    </t>
-                  </t>
-                </tbody>
-              </table>
-              <table class="hpd-table" style="flex:1">
-                <thead><tr><th>#</th><th>Department</th><th>Employees</th></tr></thead>
-                <tbody>
-                  <t t-foreach="state.data.extra.dept_distribution" t-as="dept" t-key="dept.name">
-                    <t t-if="dept_index % 3 === 1">
-                      <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
-                    </t>
-                  </t>
-                </tbody>
-              </table>
-              <table class="hpd-table" style="flex:1">
-                <thead><tr><th>#</th><th>Department</th><th>Employees</th></tr></thead>
-                <tbody>
-                  <t t-foreach="state.data.extra.dept_distribution" t-as="dept" t-key="dept.name">
-                    <t t-if="dept_index % 3 === 2">
-                      <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
-                    </t>
+                    <tr><td t-esc="dept_index + 1"/><td t-esc="dept.name"/><td t-esc="dept.count"/></tr>
                   </t>
                 </tbody>
               </table>
