@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Multi-Company Record Rule for Salary Sheet Databank -->
+        <record id="salary_sheet_databank_comp_rule" model="ir.rule">
+            <field name="name">Salary Sheet Databank Multi-Company Rule</field>
+            <field name="model_id" ref="model_salary_sheet_databank"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

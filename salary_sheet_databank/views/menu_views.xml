@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Window Action -->
+    <record id="action_salary_sheet_databank" model="ir.actions.act_window">
+        <field name="name">Salary Sheet Databank</field>
+        <field name="res_model">salary.sheet.databank</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_salary_sheet_databank_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first monthly salary sheet record!
+            </p>
+            <p>
+                Store month salary sheet names and attach multiple salary files (Excel, PDF, CSV) directly to each record.
+            </p>
+        </field>
+    </record>
+
+    <!-- Top Menu Item -->
+    <menuitem id="menu_salary_sheet_databank_root"
+              name="Salary Databank"
+              web_icon="salary_sheet_databank,static/description/icon.png"
+              sequence="15"/>
+
+    <!-- Sub Menu Item -->
+    <menuitem id="menu_salary_sheet_databank_sheets"
+              name="Salary Sheets"
+              parent="menu_salary_sheet_databank_root"
+              action="action_salary_sheet_databank"
+              sequence="10"/>
+</odoo>
