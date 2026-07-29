@@ -21,6 +21,7 @@
                             <field name="monthly_yearly_costs" widget="monetary" readonly="1" string="Monthly CTC"/>
                             <!-- <field name="bonus_amount" widget="monetary"/> -->
                             <field name="is_pf_deduct"/>
+                            <field name="is_esic_deduct"/>
                         </group>
                         <group string="Computed Summary">
                             <field name="gross_salary" widget="monetary" readonly="1"/>
@@ -163,6 +164,7 @@
                             <field name="monthly_yearly_costs" widget="monetary" readonly="1" string="Monthly CTC"/>
                             <!-- <field name="bonus_amount" widget="monetary"/> -->
                             <field name="is_pf_deduct"/>
+                            <field name="is_esic_deduct"/>
                         </group>
                         <group string="Computed Summary">
                             <field name="gross_salary" widget="monetary" readonly="1"/>

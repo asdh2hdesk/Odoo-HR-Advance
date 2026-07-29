@@ -44,6 +44,14 @@ class HrContract(models.Model):
         tracking=True,
     )
 
+    # ESIC deduction toggle
+    is_esic_deduct = fields.Boolean(
+        string='ESIC Deduction',
+        default=False,
+        help='If enabled, ESIC will be deducted from salary.',
+        tracking=True,
+    )
+
     # Computed summary fields (using final_yearly_costs from hr_contract_salary)
     inhand_salary = fields.Monetary(
         string='In Hand Salary',
@@ -97,6 +105,11 @@ class HrContract(models.Model):
     @api.onchange('is_pf_deduct')
     def _onchange_is_pf_deduct(self):
         """Recompute salary structure line amounts when PF deduct toggle changes."""
+        self._recompute_structure_line_amounts()
+
+    @api.onchange('is_esic_deduct')
+    def _onchange_is_esic_deduct(self):
+        """Recompute salary structure line amounts when ESIC deduct toggle changes."""
         self._recompute_structure_line_amounts()
 
     @api.onchange('salary_structure_id')
@@ -205,6 +218,9 @@ class HrContract(models.Model):
 
         # Recompute line amounts when CTC, bonus, PF deduct, or structure changes
         if 'final_yearly_costs' in vals or 'bonus_amount' in vals or 'is_pf_deduct' in vals or 'salary_structure_line_ids' in vals:
+            self._recompute_structure_line_amounts()
+
+        if 'final_yearly_costs' in vals or 'bonus_amount' in vals or 'is_pf_deduct' in vals or 'is_esic_deduct' in vals or 'salary_structure_line_ids' in vals:
             self._recompute_structure_line_amounts()
 
         # Track line-level changes in chatter
@@ -370,6 +386,7 @@ class HrContractSalaryStructureLine(models.Model):
         monthly_yearly_costs = float(contract.monthly_yearly_costs or 0.0)
         bonus = float(contract.bonus_amount or 0.0)
         is_pf_deduct = bool(contract.is_pf_deduct)
+        is_esic_deduct = bool(contract.is_esic_deduct)
 
         if self.compute_mode == 'percent_yearly':
             # Percentage of monthly CTC (final_yearly_costs / 12)
@@ -393,6 +410,7 @@ class HrContractSalaryStructureLine(models.Model):
                 'monthly_yearly_costs': monthly_yearly_costs,
                 'bonus': bonus,
                 'is_pf_deduct': is_pf_deduct,  # PF deduction toggle
+                'is_esic_deduct': is_esic_deduct,
                 # Aliases for backward compatibility
                 'annual_ctc': final_yearly_costs,
                 'monthly_ctc': monthly_yearly_costs,
