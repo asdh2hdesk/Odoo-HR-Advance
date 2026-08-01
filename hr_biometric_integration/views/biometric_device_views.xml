@@ -22,6 +22,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="name"/>
+                <field name="connection_type"/>
                 <field name="ip_address"/>
                 <field name="device_type"/>
                 <field name="active"/>
@@ -46,15 +47,25 @@
                                 class="btn-success"/>
                     </header>
                     <group>
-                        <field name="name"/>
-                        <field name="ip_address"/>
-                        <field name="password" password="True"/>
-                        <field name="device_type"/>
-                        <field name="active"/>
-                        <field name="last_sync" readonly="0"/>
+                        <group string="Device Info">
+                            <field name="name"/>
+                            <field name="connection_type"/>
+                            <field name="device_type"/>
+                            <field name="active"/>
+                            <field name="last_sync" readonly="0"/>
+                        </group>
+                        <group string="Local Settings" invisible="connection_type != 'local'">
+                            <field name="ip_address" required="connection_type == 'local'"/>
+                            <field name="password" password="True" required="connection_type == 'local'"/>
+                        </group>
+                        <group string="eTimeOffice Settings" invisible="connection_type != 'etimeoffice'">
+                            <field name="corporate_id" required="connection_type == 'etimeoffice'"/>
+                            <field name="etimeoffice_username" required="connection_type == 'etimeoffice'"/>
+                            <field name="etimeoffice_password" password="True" required="connection_type == 'etimeoffice'"/>
+                            <field name="etimeoffice_base_url" required="connection_type == 'etimeoffice'"/>
+                            <field name="etimeoffice_device_id"/>
+                        </group>
                     </group>
-
-
                 </sheet>
             </form>
         </field>
