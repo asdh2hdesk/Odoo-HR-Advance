@@ -18,8 +18,8 @@
                             <ul>
                                 <li>Upload an Excel file (.xlsx) with attendance data</li>
                                 <li>The file should have a "Detailed" sheet with employee codes and daily status</li>
-                                <li>Status codes: CL, EL, SL, ML, UL, HD, L</li>
-                                <li>The system will skip duplicates and create leave records in "Confirmed" state</li>
+                                <li>Status codes: P (Present), A (Absent), W/WO (Week Off), H (Holiday), CL, EL, SL, ML, UL, HD, L</li>
+                                <li>The system will skip duplicates, create attendance records for P, and leave records for leave codes</li>
                                 <li>Check server logs for detailed processing information</li>
                             </ul>
                         </div>

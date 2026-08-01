@@ -1,4 +1,3 @@
-
 .hpd-root {
   --hpd-bg:            #f0f2f7;
   --hpd-surface:       rgba(255,255,255,0.82);
@@ -303,6 +302,40 @@
 .hpd-dept-table-section { padding: 0 24px 28px; }
 .hpd-dept-table-section .hpd-card { width: 100%; }
 
+/* Single merged department table: no inner scrollbar — the table just
+   grows with the page so every department row is visible at once. */
+.hpd-dept-scroll {
+    border: 1px solid var(--hpd-border);
+    border-radius: var(--hpd-radius-sm);
+    max-height: 420px;
+    overflow-y: auto;
+}
+.hpd-dept-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.hpd-dept-scroll::-webkit-scrollbar-track {
+    background: var(--hpd-bg);
+    border-radius: 8px;
+}
+.hpd-dept-scroll::-webkit-scrollbar-thumb {
+    background: var(--hpd-blue-mid);
+    border-radius: 8px;
+}
+.hpd-dept-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--hpd-blue);
+}
+.hpd-dept-scroll .hpd-table { font-size: 13px; }
+.hpd-dept-scroll .hpd-table td:first-child,
+.hpd-dept-scroll .hpd-table th:first-child { width: 40px; }
+.hpd-dept-scroll .hpd-table td:last-child,
+.hpd-dept-scroll .hpd-table th:last-child { text-align: right; white-space: nowrap; }
+
+@media (max-width: 768px) {
+    .hpd-dept-scroll .hpd-table { font-size: 12px; }
+    .hpd-dept-scroll .hpd-table th,
+    .hpd-dept-scroll .hpd-table td { padding: 8px 10px; }
+}
+
 /* ── Animations ──────────────────────────────────────────────── */
 @keyframes hpd-fade-up {
   from { opacity: 0; transform: translateY(12px); }
@@ -339,4 +372,82 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE: Header / Date Filter Row
+   Nothing here wrapped before, so on a narrow screen "From / To /
+   Apply / month badge / Refresh" all sat on one line and ran off
+   the right edge. This stacks it into a clean vertical structure:
+     1) Logo + Title (centered)
+     2) Date From  (label above full-width input)
+     3) Date To    (label above full-width input)
+     4) Apply (full width)
+     5) Month badge | Refresh   (side by side)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .hpd-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+    position: static; /* sticky header eats too much space on small screens */
+  }
+
+  .hpd-header-left {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .hpd-title { font-size: 16px; }
+  .hpd-subtitle { text-align: center; }
+
+  .hpd-header-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+
+  /* Date filter block takes its own full-width row, and everything
+     inside it (labels, inputs, Apply) is forced onto its own line */
+  .hpd-date-filter {
+    flex: 0 0 100%;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .hpd-date-filter > * {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .hpd-date-label {
+    margin-top: 2px;
+  }
+
+  .hpd-date-input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .hpd-apply-btn {
+    padding: 10px;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  /* Month badge + Refresh share the next row, side by side */
+  .hpd-month-badge,
+  .hpd-refresh-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    text-align: center;
+    margin: 0;
+  }
 }

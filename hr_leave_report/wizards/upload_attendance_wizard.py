@@ -2,7 +2,8 @@ import base64
 import io
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
+from pytz import timezone, UTC
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
@@ -20,6 +21,19 @@ class UploadAttendanceWizard(models.TransientModel):
 
     file = fields.Binary(string="Attendance File", required=True)
     filename = fields.Char(string="Filename")
+
+    def _get_datetime_in_utc(self, date_val, float_time, employee):
+        """Convert date and float time (e.g., 9.0 = 9:00 AM) to UTC datetime based on employee's timezone."""
+        hours = int(float_time)
+        minutes = int((float_time - hours) * 60)
+        tz_name = employee.tz or employee.company_id.resource_calendar_id.tz or 'UTC'
+        try:
+            local_tz = timezone(tz_name)
+        except Exception:
+            local_tz = UTC
+        local_dt = datetime.combine(date_val, datetime.min.time().replace(hour=hours, minute=minutes))
+        local_dt = local_tz.localize(local_dt)
+        return local_dt.astimezone(UTC).replace(tzinfo=None)
 
     def action_upload(self):
         """Process the uploaded Excel file and create leave records"""
@@ -190,6 +204,7 @@ class UploadAttendanceWizard(models.TransientModel):
         employee_obj = self.env['hr.employee']
         leave_obj = self.env['hr.leave']
         leave_type_obj = self.env['hr.leave.type']
+        attendance_obj = self.env['hr.attendance']
 
         # Leave type mapping
         type_mapping = {
@@ -200,9 +215,17 @@ class UploadAttendanceWizard(models.TransientModel):
             'OD': 'On Duty',
             'UL': 'Unpaid',
             'L': 'Legal Leaves 2024',
+            'A': 'Unpaid',
+            'ABSENT': 'Unpaid',
+            'W': 'Week Off',
+            'WO': 'Week Off',
+            'WEEKOFF': 'Week Off',
+            'H': 'Holiday',
+            'HOLIDAY': 'Holiday',
         }
 
         created_count = 0
+        created_attendances_count = 0
         skipped_count = 0
         error_count = 0
 
@@ -263,16 +286,40 @@ class UploadAttendanceWizard(models.TransientModel):
                 
                 _logger.info(f"  Day {day_num}: Raw status = '{status}' (column {col_idx})")
 
-                # Skip attendance statuses
-                if status in ['P', 'W', 'H', 'A', 'WO', 'PRESENT', 'WEEKOFF', 'HOLIDAY', 'ABSENT']:
-                    _logger.info(f"    Skipping attendance status: {status}")
-                    continue
-
                 # Parse date
                 try:
                     current_date = datetime(report_year, report_month, day_num).date()
                 except ValueError as e:
                     _logger.warning(f"Invalid date: {day_num}/{report_month}/{report_year} - {e}")
+                    continue
+
+                # Handle Present ('P' or 'PRESENT')
+                if status in ['P', 'PRESENT']:
+                    check_in_utc = self._get_datetime_in_utc(current_date, 9.0, employee)
+                    check_out_utc = self._get_datetime_in_utc(current_date, 18.0, employee)
+
+                    existing_att = attendance_obj.search([
+                        ('employee_id', '=', employee.id),
+                        ('check_in', '>=', datetime.combine(current_date, datetime.min.time())),
+                        ('check_in', '<', datetime.combine(current_date + timedelta(days=1), datetime.min.time())),
+                    ], limit=1)
+
+                    if existing_att:
+                        _logger.info(f"    Duplicate attendance found for {employee.name} on {current_date} - skipping")
+                        skipped_count += 1
+                        continue
+
+                    try:
+                        attendance_obj.create({
+                            'employee_id': employee.id,
+                            'check_in': check_in_utc,
+                            'check_out': check_out_utc,
+                        })
+                        created_attendances_count += 1
+                        _logger.info(f"    ✓ Created attendance for {employee.name} on {current_date}")
+                    except Exception as e:
+                        _logger.error(f"    ✗ Failed to create attendance for {employee.name} on {current_date}: {e}")
+                        error_count += 1
                     continue
 
                 # Handle Half Day
@@ -299,10 +346,22 @@ class UploadAttendanceWizard(models.TransientModel):
                     leave_type = leave_type_obj.search([
                         '|', ('name', 'ilike', 'Unpaid'), ('name', 'ilike', 'Unpaid Leave')
                     ], limit=1)
+                elif leave_type_name == 'Week Off':
+                    leave_type = leave_type_obj.search([
+                        '|', ('name', 'ilike', 'Week Off'), ('name', 'ilike', 'Weekend')
+                    ], limit=1)
+                elif leave_type_name == 'Holiday':
+                    leave_type = leave_type_obj.search([
+                        '|', ('name', 'ilike', 'Public Holiday'), ('name', 'ilike', 'Holiday')
+                    ], limit=1)
                 else:
                     leave_type = leave_type_obj.search([('name', 'ilike', leave_type_name)], limit=1)
 
                 if not leave_type:
+                    if status in ['W', 'WO', 'WEEKOFF', 'H', 'HOLIDAY']:
+                        _logger.info(f"    Leave Type for status '{status}' ({leave_type_name}) not found - skipping day")
+                        continue
+
                     _logger.warning(f"    Leave Type '{leave_type_name}' not found in system")
                     error_count += 1
                     continue
@@ -422,7 +481,7 @@ class UploadAttendanceWizard(models.TransientModel):
         _logger.info("\n" + "=" * 80)
         _logger.info("UPLOAD SUMMARY")
         _logger.info("=" * 80)
-        _logger.info(f"Successfully created: {created_count} leaves")
+        _logger.info(f"Successfully created: {created_attendances_count} attendances, {created_count} leaves")
         _logger.info(f"Skipped (duplicates): {skipped_count}")
         _logger.info(f"Errors: {error_count}")
         _logger.info("=" * 80)
@@ -433,11 +492,10 @@ class UploadAttendanceWizard(models.TransientModel):
             'params': {
                 'title': _("Upload Complete"),
                 'message': _(
+                    "Created: %s attendances\n"
                     "Created: %s leaves\n"
-                    "Skipped: %s duplicates\n"
-                    # "Errors: %s\n\n"
-                    # "Check server logs for details."
-                ) % (created_count, skipped_count),
+                    "Skipped: %s duplicates"
+                ) % (created_attendances_count, created_count, skipped_count),
                 'type': 'success' if error_count == 0 else 'warning',
                 'sticky': True,
             }
