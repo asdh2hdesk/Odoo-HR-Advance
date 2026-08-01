@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Odoo's own Configuration menu id has changed across versions, so
+         this module owns its own top-level "Configuration" menu under
+         Attendances rather than depend on a fragile external id. If a
+         "Configuration" menu already exists in your hr_attendance
+         version, feel free to point parent below at it instead. -->
+    <menuitem id="menu_timeoffice_configuration"
+              name="Configuration"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="hr_attendance.group_hr_attendance_manager"
+              sequence="90"/>
+
+    <menuitem id="menu_timeoffice_settings"
+              name="Time Office Settings"
+              parent="menu_timeoffice_configuration"
+              action="action_timeoffice_settings"
+              groups="hr_attendance.group_hr_attendance_manager"
+              sequence="10"/>
+
+    <menuitem id="menu_attendance_sync_log"
+              name="Attendance Sync Logs"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="action_attendance_sync_log"
+              groups="hr_attendance.group_hr_attendance_officer"
+              sequence="60"/>
+</odoo>

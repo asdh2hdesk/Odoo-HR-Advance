@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        This module reuses Odoo's built-in HR Attendance security groups
+        instead of inventing new ones, per the spec:
+          - HR Managers (hr_attendance.group_hr_attendance_manager, which
+            is a subset/implied by hr.group_hr_manager) can change API
+            settings, run manual sync and view all logs.
+          - Normal HR / Attendance users
+            (hr_attendance.group_hr_attendance_officer) can only view
+            imported attendance and read-only sync logs.
+    -->
+
+    <record id="attendance_sync_log_rule_manager" model="ir.rule">
+        <field name="name">Attendance Sync Log: HR Managers see all</field>
+        <field name="model_id" ref="model_attendance_sync_log"/>
+        <field name="groups" eval="[(4, ref('hr_attendance.group_hr_attendance_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_create">1</field>
+        <field name="perm_unlink">1</field>
+    </record>
+
+    <record id="attendance_sync_log_rule_user" model="ir.rule">
+        <field name="name">Attendance Sync Log: HR Users read-only</field>
+        <field name="model_id" ref="model_attendance_sync_log"/>
+        <field name="groups" eval="[(4, ref('hr_attendance.group_hr_attendance_officer'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read">1</field>
+        <field name="perm_write">0</field>
+        <field name="perm_create">0</field>
+        <field name="perm_unlink">0</field>
+    </record>
+</odoo>

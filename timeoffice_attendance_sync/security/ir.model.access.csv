@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_attendance_sync_log_manager,attendance.sync.log.manager,model_attendance_sync_log,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_attendance_sync_log_user,attendance.sync.log.user,model_attendance_sync_log,hr_attendance.group_hr_attendance_officer,1,0,0,0
+access_timeoffice_attendance_sync_manager,timeoffice.attendance.sync.manager,model_timeoffice_attendance_sync,hr_attendance.group_hr_attendance_manager,1,1,1,1

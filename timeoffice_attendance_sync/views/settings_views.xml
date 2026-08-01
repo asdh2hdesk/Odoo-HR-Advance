@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_timeoffice" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.timeoffice</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="85"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Time Office" string="Time Office" name="timeoffice_attendance_sync" groups="hr_attendance.group_hr_attendance_manager">
+                    <block title="API Connection Configuration" name="timeoffice_api_container">
+                        <setting string="API Settings" help="Root URL and authentication parameters for the Time Office REST API">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="timeoffice_api_base_url" class="col-lg-3 o_light_label" string="API Base URL"/>
+                                    <field name="timeoffice_api_base_url" placeholder="https://timeoffice.example.com"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_auth_type" class="col-lg-3 o_light_label" string="Auth Type"/>
+                                    <field name="timeoffice_auth_type"/>
+                                </div>
+                                <div class="row mt8" invisible="timeoffice_auth_type != 'basic'">
+                                    <label for="timeoffice_username" class="col-lg-3 o_light_label" string="Username"/>
+                                    <field name="timeoffice_username" placeholder="Username"/>
+                                </div>
+                                <div class="row mt8" invisible="timeoffice_auth_type != 'basic'">
+                                    <label for="timeoffice_password" class="col-lg-3 o_light_label" string="Password"/>
+                                    <field name="timeoffice_password" password="True" placeholder="Password"/>
+                                </div>
+                                <div class="row mt8" invisible="timeoffice_auth_type != 'api_key'">
+                                    <label for="timeoffice_api_key" class="col-lg-3 o_light_label" string="API Key"/>
+                                    <field name="timeoffice_api_key" password="True" placeholder="API Key"/>
+                                </div>
+                                <div class="row mt8" invisible="timeoffice_auth_type != 'jwt'">
+                                    <label for="timeoffice_bearer_token" class="col-lg-3 o_light_label" string="Bearer Token"/>
+                                    <field name="timeoffice_bearer_token" password="True" placeholder="Bearer Token"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_attendance_endpoint" class="col-lg-3 o_light_label" string="Attendance Endpoint"/>
+                                    <field name="timeoffice_attendance_endpoint"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_employee_endpoint" class="col-lg-3 o_light_label" string="Employee Endpoint"/>
+                                    <field name="timeoffice_employee_endpoint"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_company_code" class="col-lg-3 o_light_label" string="Company Code"/>
+                                    <field name="timeoffice_company_code" placeholder="Optional"/>
+                                </div>
+                                <div class="mt16">
+                                    <button name="action_timeoffice_test_connection" type="object" string="Test Connection" class="btn-secondary me-2"/>
+                                    <button name="action_timeoffice_sync_now" type="object" string="Sync Now" class="btn-primary"/>
+                                </div>
+                            </div>
+                        </setting>
+
+                        <setting string="Automatic Synchronization" help="Configure background scheduled synchronization">
+                            <field name="timeoffice_enable_auto_sync"/>
+                            <div class="content-group" invisible="not timeoffice_enable_auto_sync">
+                                <div class="row mt8">
+                                    <label for="timeoffice_sync_interval" class="col-lg-4 o_light_label" string="Sync Interval (minutes)"/>
+                                    <field name="timeoffice_sync_interval"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_last_sync_time" class="col-lg-4 o_light_label" string="Last Sync Time"/>
+                                    <field name="timeoffice_last_sync_time" readonly="1"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Dashboard" name="timeoffice_dashboard_container">
+                        <setting string="Sync Metrics" help="Live status and metrics for today's sync operations">
+                            <div class="content-group">
+                                <div class="row">
+                                    <label for="timeoffice_imported_today" class="col-lg-4 o_light_label" string="Total Imported Today"/>
+                                    <field name="timeoffice_imported_today" readonly="1"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_failed_records" class="col-lg-4 o_light_label" string="Failed Records"/>
+                                    <field name="timeoffice_failed_records" readonly="1"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_pending_records" class="col-lg-4 o_light_label" string="Pending Records"/>
+                                    <field name="timeoffice_pending_records" readonly="1"/>
+                                </div>
+                                <div class="row mt8">
+                                    <label for="timeoffice_api_status" class="col-lg-4 o_light_label" string="API Status"/>
+                                    <field name="timeoffice_api_status" readonly="1"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_timeoffice_settings" model="ir.actions.act_window">
+        <field name="name">Time Office Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'timeoffice_attendance_sync'}</field>
+    </record>
+</odoo>
