@@ -45,30 +45,37 @@ class HrEmployee(models.Model):
             'context': {'default_employee_id': self.id}
         }
 
-    @api.constrains('l10n_in_pan', 'is_rejoining_employee', 'previous_employee_id')
-    def _check_unique_pan_rejoin(self):
-        """ Allow PAN duplication ONLY if the new employee is marked as rejoining and linked to the retired employee. """
+    @api.constrains('l10n_in_pan', 'identification_id', 'is_rejoining_employee', 'previous_employee_id')
+    def _check_unique_pan_and_aadhar_rejoin(self):
+        """ Allow PAN and Aadhar duplication ONLY if the new employee is marked as rejoining and linked to the retired employee. """
         for employee in self:
-            # We assume l10n_in_pan exists, gracefully getting it
-            if not getattr(employee, 'l10n_in_pan', False):
-                continue
-            
-            # Find any other employee with the same PAN
-            domain = [('l10n_in_pan', '=', employee.l10n_in_pan), ('id', '!=', employee.id)]
-            duplicates = self.env['hr.employee'].with_context(active_test=False).search(domain)
-            
-            if not duplicates:
-                continue
-                
-            if not employee.is_rejoining_employee:
-                raise ValidationError(_("A related PAN already exists. If this is a rejoining employee, please enable 'Is Rejoining Employee' and select the previous record."))
-            
-            if employee.is_rejoining_employee and employee.previous_employee_id:
-                # Need to be sure the duplicate is ONLY the previous employee
-                invalid_duplicates = duplicates.filtered(lambda d: d.id != employee.previous_employee_id.id)
-                if invalid_duplicates:
-                    raise ValidationError(_("Another employee apart from the selected previous employee utilizes this PAN!"))
-            else:
-                # If marked as rejoining but hasn't linked yet, we still fail
-                raise ValidationError(_("Please link the Previous Employee record to correctly utilize this PAN."))
+            # Check PAN duplication
+            pan = getattr(employee, 'l10n_in_pan', False)
+            if pan:
+                domain = [('l10n_in_pan', '=', pan), ('id', '!=', employee.id)]
+                duplicates = self.env['hr.employee'].with_context(active_test=False).search(domain)
+                if duplicates:
+                    if not employee.is_rejoining_employee:
+                        raise ValidationError(_("A related PAN already exists. If this is a rejoining employee, please enable 'Is Rejoining Employee' and select the previous record."))
+                    if employee.previous_employee_id:
+                        invalid_duplicates = duplicates.filtered(lambda d: d.id != employee.previous_employee_id.id)
+                        if invalid_duplicates:
+                            raise ValidationError(_("Another employee apart from the selected previous employee utilizes this PAN!"))
+                    else:
+                        raise ValidationError(_("Please link the Previous Employee record to correctly utilize this PAN."))
+
+            # Check Aadhar (identification_id) duplication
+            aadhar = getattr(employee, 'identification_id', False)
+            if aadhar:
+                domain = [('identification_id', '=', aadhar), ('id', '!=', employee.id)]
+                duplicates = self.env['hr.employee'].with_context(active_test=False).search(domain)
+                if duplicates:
+                    if not employee.is_rejoining_employee:
+                        raise ValidationError(_("A related Aadhar Number already exists. If this is a rejoining employee, please enable 'Is Rejoining Employee' and select the previous record."))
+                    if employee.previous_employee_id:
+                        invalid_duplicates = duplicates.filtered(lambda d: d.id != employee.previous_employee_id.id)
+                        if invalid_duplicates:
+                            raise ValidationError(_("Another employee apart from the selected previous employee utilizes this Aadhar Number!"))
+                    else:
+                        raise ValidationError(_("Please link the Previous Employee record to correctly utilize this Aadhar Number."))
 

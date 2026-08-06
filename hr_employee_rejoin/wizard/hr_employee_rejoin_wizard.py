@@ -6,7 +6,7 @@ class HrEmployeeRejoinWizard(models.TransientModel):
     _description = 'Rejoin Employee Wizard'
 
     # Step 1: Search Employee
-    search_keyword = fields.Char(string="Search Keyword", help="Search by Name, PAN, Aadhaar or Employee Code")
+    aadhar_number = fields.Char(string="Aadhar Number", help="Search archived employee by Aadhar Number, Name, PAN or Code")
     previous_employee_id = fields.Many2one(
         'hr.employee', 
         string='Select Archived Employee', 
@@ -19,7 +19,7 @@ class HrEmployeeRejoinWizard(models.TransientModel):
     job_id = fields.Many2one('hr.job', string='Job Position', related='previous_employee_id.job_id', readonly=True)
     old_employee_code = fields.Char(string='Old Employee Code', readonly=True)
     l10n_in_pan = fields.Char(string='PAN', readonly=True)
-    identification_id = fields.Char(string='AADHAAR / ID', readonly=True)
+    identification_id = fields.Char(string='Aadhar Number / ID', readonly=True)
 
     previous_join_date = fields.Date(string='Previous Joining Date')
     previous_exit_date = fields.Date(string='Previous Exit Date')
@@ -27,34 +27,70 @@ class HrEmployeeRejoinWizard(models.TransientModel):
     # Target New details
     rejoin_date = fields.Date(string="Rejoining Date", default=fields.Date.context_today, required=True)
 
-    @api.onchange('search_keyword')
-    def _onchange_search_keyword(self):
-        if self.search_keyword:
-            domain = [
-                ('active', '=', False),
-                '|', ('name', 'ilike', self.search_keyword),
-                '|', ('l10n_in_pan', 'ilike', self.search_keyword),
-                '|', ('identification_id', 'ilike', self.search_keyword),
-                '|', ('employee_code', 'ilike', self.search_keyword),
-                     ('mobile_phone', 'ilike', self.search_keyword)
+    @api.onchange('aadhar_number')
+    def _onchange_aadhar_number(self):
+        if self.aadhar_number:
+            val = self.aadhar_number.strip()
+            digits_only = ''.join(filter(str.isdigit, val))
+            
+            # Construct OR conditions for search
+            or_conditions = [
+                ('identification_id', 'ilike', val),
+                ('name', 'ilike', val),
+                ('l10n_in_pan', 'ilike', val),
+                ('employee_code', 'ilike', val)
             ]
-            # Try to safely inject other aadhaar variants in domain if we aren't completely sure 
-            # Odoo domains ignore non-existing fields if we structure carefully, but here we just try identification_id
-            res = self.env['hr.employee'].with_context(active_test=False).search(domain, limit=10)
-            return {'domain': {'previous_employee_id': [('id', 'in', res.ids)]}}
+            if digits_only and digits_only != val:
+                or_conditions.append(('identification_id', 'ilike', digits_only))
+            if len(digits_only) == 12:
+                spaced = f"{digits_only[:4]} {digits_only[4:8]} {digits_only[8:]}"
+                or_conditions.append(('identification_id', 'ilike', spaced))
+
+            # Build valid Odoo OR domain
+            or_domain = []
+            for _ in range(len(or_conditions) - 1):
+                or_domain.append('|')
+            or_domain.extend(or_conditions)
+
+            full_domain = [('active', '=', False)] + or_domain
+
+            # Search with active_test=False to find archived employees
+            res = self.env['hr.employee'].with_context(active_test=False).search(full_domain, limit=10)
+
+            if res:
+                self.previous_employee_id = res[0].id
+                self._onchange_previous_employee_id()
+                return {'domain': {'previous_employee_id': [('id', 'in', res.ids)]}}
+            else:
+                self.previous_employee_id = False
+                self._onchange_previous_employee_id()
+                return {'domain': {'previous_employee_id': [('active', '=', False)]}}
         else:
+            self.previous_employee_id = False
+            self._onchange_previous_employee_id()
             return {'domain': {'previous_employee_id': [('active', '=', False)]}}
 
     @api.onchange('previous_employee_id')
     def _onchange_previous_employee_id(self):
         if self.previous_employee_id:
             emp = self.previous_employee_id
-            self.old_employee_code = getattr(emp, 'employee_code', False)
+            self.old_employee_code = getattr(emp, 'employee_code', False) or getattr(emp, 'code', False)
             self.l10n_in_pan = getattr(emp, 'l10n_in_pan', False)
             self.identification_id = getattr(emp, 'identification_id', False)
-            self.previous_join_date = getattr(emp, 'first_contract_date', False) or getattr(emp, 'create_date', False)
-            # Find exit date either from contract or departure_date
-            self.previous_exit_date = getattr(emp, 'departure_date', False)
+            p_join = getattr(emp, 'first_contract_date', False) or getattr(emp, 'create_date', False)
+            if p_join and hasattr(p_join, 'date'):
+                p_join = p_join.date()
+            self.previous_join_date = p_join
+            p_exit = getattr(emp, 'departure_date', False)
+            if p_exit and hasattr(p_exit, 'date'):
+                p_exit = p_exit.date()
+            self.previous_exit_date = p_exit
+        else:
+            self.old_employee_code = False
+            self.l10n_in_pan = False
+            self.identification_id = False
+            self.previous_join_date = False
+            self.previous_exit_date = False
 
     def action_create_rejoining_employee(self):
         self.ensure_one()
