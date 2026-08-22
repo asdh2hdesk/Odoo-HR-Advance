@@ -47,6 +47,7 @@
         </record>
 
         <!-- Conveyance = 10% of Basic -->
+        <!--
         <record id="german_tmt_line_conveyance" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">30</field>
@@ -57,8 +58,10 @@
             <field name="python_code">result = amount('BASIC') * 0.10</field>
             <field name="show_in_offer">True</field>
         </record>
+        -->
 
         <!-- LTA = 10% of Basic -->
+        <!--
         <record id="german_tmt_line_lta" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">40</field>
@@ -69,8 +72,9 @@
             <field name="python_code">result = amount('BASIC') * 0.10</field>
             <field name="show_in_offer">True</field>
         </record>
+        -->
 
-        <!-- Other Allowance = monthly_yearly_costs - bonus - Basic - HRA - Conveyance - LTA -->
+        <!-- Other Allowance = monthly_yearly_costs - bonus - Basic - HRA -->
         <record id="german_tmt_line_other_allowance" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">50</field>
@@ -78,11 +82,11 @@
             <field name="code">OTHER_ALW</field>
             <field name="impact">cost</field>
             <field name="compute_mode">formula</field>
-            <field name="python_code">result = (monthly_yearly_costs - bonus) - amount('BASIC') - amount('HRA') - amount('CONV') - amount('LTA')</field>
+            <field name="python_code">result = (monthly_yearly_costs - bonus) - amount('BASIC') - amount('HRA')</field>
             <field name="show_in_offer">True</field>
         </record>
 
-        <!-- TOTAL = Basic + HRA + Conveyance + LTA + Other Allowance -->
+        <!-- TOTAL = Basic + HRA + Other Allowance -->
         <record id="german_tmt_line_total" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">60</field>
@@ -90,7 +94,7 @@
             <field name="code">TOTAL</field>
             <field name="impact">benefit</field>
             <field name="compute_mode">formula</field>
-            <field name="python_code">result = amount('BASIC') + amount('HRA') + amount('CONV') + amount('LTA') + amount('OTHER_ALW')</field>
+            <field name="python_code">result = amount('BASIC') + amount('HRA') + amount('OTHER_ALW')</field>
             <field name="show_in_offer">True</field>
         </record>
 
@@ -118,7 +122,7 @@
             <field name="show_in_offer">True</field>
         </record>
 
-        <!-- PF SALARY: IF(is_pf_deduct=False, 0, IF((Basic+HRA+Conveyance+LTA)>=15000, 15000, round(Basic+HRA+Conveyance+LTA))) -->
+        <!-- PF SALARY: IF(is_pf_deduct=False, 0, IF((Basic+HRA)>=15000, 15000, round(Basic+HRA))) -->
         <record id="german_tmt_line_pf_salary" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">90</field>
@@ -128,8 +132,8 @@
             <field name="compute_mode">formula</field>
             <field name="python_code">
 # PF calculation based on is_pf_deduct flag
-# Formula: IF(is_pf_deduct=False, 0, IF((Basic+HRA+Conv+LTA)>=15000, 15000, round(Basic+HRA+Conv+LTA)))
-pf_base = amount('BASIC') + amount('HRA') + amount('CONV') + amount('LTA')
+# Formula: IF(is_pf_deduct=False, 0, IF((Basic+HRA)>=15000, 15000, round(Basic+HRA)))
+pf_base = amount('BASIC') + amount('HRA')
 if not is_pf_deduct:
     result = 0.0
 elif pf_base >= 15000:
@@ -140,7 +144,68 @@ else:
             <field name="show_in_offer">True</field>
         </record>
 
-        <!-- INHAND = Payable - (12% of PF Salary) -->
+        <!-- Employee PF: Provident Fund (Employee) Deduction -->
+        <record id="german_tmt_line_pf_emp" model="salary.config.structure.line">
+            <field name="structure_id" ref="german_tmt_salary_structure"/>
+            <field name="sequence">92</field>
+            <field name="name">Employee PF</field>
+            <field name="code">PF_EMP</field>
+            <field name="impact">deduction</field>
+            <field name="compute_mode">formula</field>
+            <field name="python_code">
+if is_pf_deduct:
+    result = 1800.0 if amount('PF_SALARY') &gt;= 15000 else round(amount('PF_SALARY') * 0.12, 0)
+else:
+    result = 0.0
+            </field>
+            <field name="show_in_offer">True</field>
+        </record>
+
+        <!-- ESIC Salary: base for ESIC calculation -->
+        <record id="german_tmt_line_esic_salary" model="salary.config.structure.line">
+            <field name="structure_id" ref="german_tmt_salary_structure"/>
+            <field name="sequence">93</field>
+            <field name="name">ESIC Salary</field>
+            <field name="code">ESIC_SALARY</field>
+            <field name="impact">deduction</field>
+            <field name="compute_mode">formula</field>
+            <field name="python_code">
+basic = amount('BASIC')
+other = amount('OTHER_ALW')
+if is_esic_deduct:
+    esic_base = basic + other
+    if esic_base &lt; 21000:
+        result = round(esic_base, 0)
+    else:
+        result = 0.0
+else:
+    result = 0.0
+            </field>
+            <field name="show_in_offer">True</field>
+        </record>
+
+        <!-- ESIC: actual ESIC deduction -->
+        <record id="german_tmt_line_esic" model="salary.config.structure.line">
+            <field name="structure_id" ref="german_tmt_salary_structure"/>
+            <field name="sequence">95</field>
+            <field name="name">ESIC</field>
+            <field name="code">ESIC</field>
+            <field name="impact">deduction</field>
+            <field name="compute_mode">formula</field>
+            <field name="python_code">
+if not is_esic_deduct:
+    result = 0.0
+else:
+    esic_salary = amount('ESIC_SALARY')
+    if esic_salary &gt;= 21000:
+        result = 0.0
+    else:
+        result = -(-esic_salary * 0.0325 // 1)
+            </field>
+            <field name="show_in_offer">True</field>
+        </record>
+
+        <!-- INHAND = Payable - PF_EMP - ESIC -->
         <record id="german_tmt_line_inhand" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">100</field>
@@ -148,7 +213,7 @@ else:
             <field name="code">INHAND</field>
             <field name="impact">benefit</field>
             <field name="compute_mode">formula</field>
-            <field name="python_code">result = amount('PAYABLE') - (amount('PF_SALARY') * 0.12)</field>
+            <field name="python_code">result = amount('PAYABLE') - amount('PF_EMP') - amount('ESIC')</field>
             <field name="show_in_offer">True</field>
         </record>
 

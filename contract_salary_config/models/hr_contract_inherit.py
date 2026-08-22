@@ -40,7 +40,7 @@ class HrContract(models.Model):
     is_pf_deduct = fields.Boolean(
         string='PF Deduction',
         default=False,
-        help='If enabled, PF will be deducted from salary. PF is calculated as: if (Basic+HRA+Conveyance+LTA) >= 15000 then 15000, else round(Basic+HRA+Conveyance+LTA).',
+        help='If enabled, PF will be deducted from salary. PF is calculated as: if (Basic+HRA) >= 15000 then 15000, else round(Basic+HRA).',
         tracking=True,
     )
 

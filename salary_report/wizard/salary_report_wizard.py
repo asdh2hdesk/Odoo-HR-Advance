@@ -242,12 +242,12 @@ class SalaryReportWizard(models.TransientModel):
             v = self._by_name(lines, 'professional tax', 'prof tax')
         return abs(v)
 
-    def _get_pf_salary(self, lines, basic, conveyance, lta):
+    def _get_pf_salary(self, lines, basic, conveyance, lta, hra=0.0):
         v = self._by_code(lines, 'PF_SALARY', 'PF_WAGE', 'TAXABLE_SALARY', 'PF_SAL')
         if not v:
             v = self._by_name(lines, 'pf salary', 'taxable salary')
         if not v and basic:
-            v = min(basic + conveyance + lta, 15000)
+            v = min(basic + conveyance + lta + hra, 15000)
         return v
     def action_generate_excel(self):
         self = self._get_company_scoped_self()
@@ -396,7 +396,7 @@ class SalaryReportWizard(models.TransientModel):
             net        = self._get_net(payslip_lines)
             pf         = self._get_pf(payslip_lines)
             esic       = self._get_esic(payslip_lines)
-            pf_salary  = self._get_pf_salary(payslip_lines, basic, conveyance, lta)
+            pf_salary  = self._get_pf_salary(payslip_lines, basic, conveyance, lta, hra)
 
             pf_flag   = "Yes" if pf   != 0 else "No"
             esic_flag = "Yes" if esic != 0 else "No"
