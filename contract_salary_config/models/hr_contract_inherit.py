@@ -83,13 +83,20 @@ class HrContract(models.Model):
             )[:1]
             contract.inhand_salary = float(inhand_line.amount_monthly) if inhand_line else 0.0
 
-    @api.depends('monthly_yearly_costs', 'bonus_amount')
+    @api.depends('monthly_yearly_costs', 'salary_structure_line_ids.amount_monthly')
     def _compute_gross_salary(self):
-        """Gross Salary = Monthly CTC - Bonus Amount"""
+        """Gross Salary = Monthly CTC - PF - ESIC"""
         for contract in self:
             monthly_ctc = contract.monthly_yearly_costs or 0.0
-            bonus = contract.bonus_amount or 0.0
-            contract.gross_salary = monthly_ctc - bonus
+            pf_line = contract.salary_structure_line_ids.filtered(
+                lambda l: l.code in ('PF', 'PF_EMP')
+            )[:1]
+            esic_line = contract.salary_structure_line_ids.filtered(
+                lambda l: l.code in ('ESIC', 'ESIC_EMP')
+            )[:1]
+            pf_amount = float(pf_line.amount_monthly or 0.0) if pf_line else 0.0
+            esic_amount = float(esic_line.amount_monthly or 0.0) if esic_line else 0.0
+            contract.gross_salary = monthly_ctc - pf_amount - esic_amount
 
     # ----- Onchange & Recomputation -----
     @api.onchange('final_yearly_costs')
