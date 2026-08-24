@@ -36,6 +36,25 @@ _TRIGGER_FIELDS = {
 }
 
 
+class SalaryConfigStructure(models.Model):
+    _inherit = 'salary.config.structure'
+
+    def action_sync_payroll_rules(self):
+        """Action to force re-sync of all salary rules from structure template lines."""
+        for structure in self:
+            structure.line_ids._sync_hr_salary_rules()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Payroll Rules Synced',
+                'message': 'Payroll rules re-synced successfully.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
+
 class SalaryConfigStructureLine(models.Model):
     _inherit = 'salary.config.structure.line'
 
@@ -59,22 +78,54 @@ class SalaryConfigStructureLine(models.Model):
             self._sync_hr_salary_rules()
         return res
 
+    def _get_fallback_rule_category(self):
+        self.ensure_one()
+        Category = self.env['hr.salary.rule.category']
+
+        if self.code_id:
+            return self.code_id
+
+        if self.code:
+            cat = Category.search([('code', '=', self.code.strip())], limit=1)
+            if cat:
+                return cat
+
+        if self.impact == 'deduction':
+            cat = self.env.ref('hr_payroll.DED', raise_if_not_found=False)
+        elif self.impact in ('benefit', 'cost'):
+            cat = self.env.ref('hr_payroll.ALW', raise_if_not_found=False) or self.env.ref('hr_payroll.GROSS', raise_if_not_found=False)
+        else:
+            cat = False
+
+        if not cat:
+            cat = Category.search([], limit=1)
+
+        return cat
+
     def _sync_hr_salary_rules(self):
         HrSalaryRule = self.env['hr.salary.rule']
         for line in self:
-            if not line.code_id:
+            category = line._get_fallback_rule_category()
+            if not category and not line.code:
                 continue
             sync_vals = line._prepare_hr_salary_rule_sync_vals()
-            rule = line.hr_salary_rule_id
-            if not rule or not rule.exists():
-                rule = HrSalaryRule.search([
+            if category:
+                sync_vals['category_id'] = category.id
+
+            # Search for ALL matching rules by code or name/category across ALL structures
+            rules = HrSalaryRule.search([('code', '=', line.code)]) if line.code else HrSalaryRule.browse()
+            if not rules and category:
+                rules = HrSalaryRule.search([
                     ('name', '=', line.name or ''),
-                    ('category_id', '=', line.code_id.id),
-                ], limit=1)
-                if not rule and line.code:
-                    rule = HrSalaryRule.search([('code', '=', line.code)], limit=1)
-            if rule:
-                rule.write(sync_vals)
+                    ('category_id', '=', category.id),
+                ])
+            if not rules and line.name:
+                rules = HrSalaryRule.search([('name', '=', line.name)])
+
+            if rules:
+                rules.write(sync_vals)
+                if line.hr_salary_rule_id not in rules:
+                    line.with_context(skip_salary_rule_sync=True).write({'hr_salary_rule_id': rules[0].id})
             else:
                 create_vals = dict(sync_vals)
                 structure = line._get_target_hr_salary_rule_structure()
@@ -85,19 +136,20 @@ class SalaryConfigStructureLine(models.Model):
                     )
                     continue
                 create_vals.update({
-                    'name': line.name or (line.code_id.name or line.code or 'Line'),
+                    'name': line.name or (category.name if category else line.code or 'Line'),
                     'code': line._generate_salary_rule_code(),
-                    'category_id': line.code_id.id,
+                    'category_id': category.id if category else False,
                     'struct_id': structure.id,
                 })
                 rule = HrSalaryRule.create(create_vals)
-            if rule != line.hr_salary_rule_id:
-                line.with_context(skip_salary_rule_sync=True).write({'hr_salary_rule_id': rule.id})
+                if rule != line.hr_salary_rule_id:
+                    line.with_context(skip_salary_rule_sync=True).write({'hr_salary_rule_id': rule.id})
 
     def _prepare_hr_salary_rule_sync_vals(self):
         HrSalaryRule = self.env['hr.salary.rule']
         defaults = HrSalaryRule.default_get(_RULE_SYNC_FIELDS)
         vals = dict(defaults or {})
+        category = self._get_fallback_rule_category()
         vals.update({
             'sequence': self.sequence or 0,
             'quantity': vals.get('quantity') or '1.0',
@@ -108,25 +160,26 @@ class SalaryConfigStructureLine(models.Model):
             'condition_range_max': 0.0,
             'note': self._build_salary_rule_note(),
         })
+        if category:
+            vals['category_id'] = category.id
         code = (self.code or '').strip()
         compute_mode = self.compute_mode or 'formula'
         if compute_mode == 'percent_yearly':
             pct = (self.value or 0.0) / 100.0
-            fallback_expr = f"(contract.wage or 0.0) * {pct}"
+            fallback_code = f"result = (contract.wage or 0.0) * {pct}"
         elif compute_mode == 'fixed_monthly':
             fix_val = self.value or 0.0
-            fallback_expr = f"{fix_val}"
+            fallback_code = f"result = {fix_val}"
         else:
-            code_expr = self._adapt_python_code_for_payroll_rule()
-            if code_expr.startswith('result ='):
-                fallback_expr = code_expr[len('result ='):].strip()
-            else:
-                fallback_expr = code_expr.strip()
+            fallback_code = self._adapt_python_code_for_payroll_rule()
+            if not fallback_code or not fallback_code.strip():
+                fallback_code = "result = 0.0"
 
         if code:
-            python_code = f"val = contract.get_salary_breakdown_amount('{code}')\nresult = val if val else ({fallback_expr})"
+            indented_fallback = "\n".join("    " + l for l in fallback_code.splitlines())
+            python_code = f"if contract.has_salary_breakdown_line('{code}'):\n    result = contract.get_salary_breakdown_amount('{code}')\nelse:\n{indented_fallback}"
         else:
-            python_code = f"result = {fallback_expr}"
+            python_code = fallback_code
 
         vals.update({
             'amount_select': 'code',

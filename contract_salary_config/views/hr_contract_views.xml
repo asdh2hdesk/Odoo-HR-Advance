@@ -48,15 +48,18 @@
                     </group>
                     <separator string="Salary Components"/>
                     <field name="salary_structure_line_ids" nolabel="1">
-                        <list editable="bottom">
+                        <list editable="bottom" decoration-info="is_override == True">
                             <field name="sequence" widget="handle"/>
                             <field name="name"/>
                             <field name="code" optional="hide"/>
-                            <field name="compute_mode" optional="hide"/>
-                            <field name="value" string="Value / %" optional="hide"/>
+                            <field name="compute_mode" optional="show"/>
+                            <field name="value" string="Value / %" optional="show"/>
                             <field name="amount_monthly" widget="monetary" readonly="1"/>
                             <field name="amount_annual" optional="hide" widget="monetary" readonly="1"/>
                             <field name="impact" optional="hide"/>
+                            <field name="source_display" string="Source" optional="show" readonly="1"/>
+                            <field name="is_override" string="Override?" optional="show"/>
+                            <button name="action_use_template_value" string="Use Template" type="object" icon="fa-undo" invisible="not is_override" title="Reset this component to master template value"/>
                             <field name="code_id" optional="hide"/>
                             <field name="python_code" optional="hide" widget="code"/>
                             <field name="currency_id" column_invisible="1"/>
@@ -122,15 +125,18 @@
                     </group>
                     <separator string="Salary Components"/>
                     <field name="salary_structure_line_ids" nolabel="1">
-                        <list editable="bottom">
+                        <list editable="bottom" decoration-info="is_override == True">
                             <field name="sequence" widget="handle"/>
                             <field name="name"/>
                             <field name="code" optional="hide"/>
-                            <field name="compute_mode" optional="hide"/>
-                            <field name="value" string="Value / %" optional="hide"/>
+                            <field name="compute_mode" optional="show"/>
+                            <field name="value" string="Value / %" optional="show"/>
                             <field name="amount_monthly" widget="monetary" readonly="1"/>
                             <field name="amount_annual" optional="hide" widget="monetary" readonly="1"/>
                             <field name="impact" optional="hide"/>
+                            <field name="source_display" string="Source" optional="show" readonly="1"/>
+                            <field name="is_override" string="Override?" optional="show"/>
+                            <button name="action_use_template_value" string="Use Template" type="object" icon="fa-undo" invisible="not is_override" title="Reset this component to master template value"/>
                             <field name="code_id" optional="hide"/>
                             <field name="python_code" optional="hide" widget="code"/>
                             <field name="currency_id" column_invisible="1"/>

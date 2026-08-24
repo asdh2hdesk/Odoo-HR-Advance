@@ -99,6 +99,7 @@
         </record>
 
         <!-- Bonus = Fixed amount from bonus_amount field (default 1200) -->
+        <!--
         <record id="german_tmt_line_bonus" model="salary.config.structure.line">
             <field name="structure_id" ref="german_tmt_salary_structure"/>
             <field name="sequence">70</field>
@@ -109,6 +110,7 @@
             <field name="python_code">result = bonus</field>
             <field name="show_in_offer">True</field>
         </record>
+        -->
 
         <!-- Payable = TOTAL + Bonus -->
         <record id="german_tmt_line_payable" model="salary.config.structure.line">

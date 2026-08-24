@@ -21,11 +21,79 @@ class HrContract(models.Model):
         copy=True,
     )
 
-    def get_salary_breakdown_amount(self, code):
+    def _get_breakdown_line(self, code_or_category):
+        """Find matching contract salary component line by code, name, category, or alias."""
+        self.ensure_one()
+        if not code_or_category:
+            return False
+
+        target = str(code_or_category).strip().upper()
+
+        # 1. Exact match on line.code (case-insensitive)
+        line = self.salary_structure_line_ids.filtered(
+            lambda l: l.code and l.code.strip().upper() == target
+        )[:1]
+
+        # 2. Match by line.name (case-insensitive & substring match)
+        if not line:
+            line = self.salary_structure_line_ids.filtered(
+                lambda l: l.name and (
+                    l.name.strip().upper() == target or
+                    target in l.name.strip().upper() or
+                    l.name.strip().upper() in target
+                )
+            )[:1]
+
+        # 3. Match by Salary Rule Category (code_id.code or code_id.name)
+        if not line:
+            line = self.salary_structure_line_ids.filtered(
+                lambda l: l.code_id and (
+                    (l.code_id.code and l.code_id.code.strip().upper() == target) or
+                    (l.code_id.name and l.code_id.name.strip().upper() == target)
+                )
+            )[:1]
+
+        # 4. Common Code Aliases
+        if not line:
+            alias_map = {
+                'BASIC_SALARY': ['BASIC', 'BASIC SALARY'],
+                'BASIC': ['BASIC_SALARY', 'BASIC SALARY'],
+                'HRA': ['HOUSE RENT ALLOWANCE', 'HOUSE_RENT_ALLOWANCE', 'HOUSE RENT'],
+                'HOUSE RENT ALLOWANCE': ['HRA', 'HOUSE_RENT'],
+                'CONV': ['CONVEYANCE', 'CONVEYANCE ALLOWANCE', 'CONVEYANCE ALLOWNCE', 'TRANSPORT'],
+                'CONVEYANCE': ['CONV', 'CONVEYANCE ALLOWANCE', 'CONVEYANCE ALLOWNCE', 'TRANSPORT'],
+                'CONVEYANCE ALLOWNCE': ['CONV', 'CONVEYANCE', 'CONVEYANCE ALLOWANCE'],
+                'LTA': ['LEAVE TRAVEL ALLOWANCE', 'LTA REIMBURS.', 'LTA_REIMB'],
+                'OTHER_ALW': ['OTHER ALLOWANCE', 'OTHER_ALLOWANCE', 'OTHER', 'SUPPLEMENTARY'],
+                'OTHER ALLOWANCE': ['OTHER_ALW', 'OTHER_ALLOWANCE', 'OTHER'],
+                'BONUS': ['GROSS_BONUS', 'BONUS'],
+                'GROSS': ['TOTAL', 'PAYABLE', 'GROSS SALARY', 'TOTAL GROSS EARNING'],
+                'TOTAL': ['GROSS', 'PAYABLE', 'GROSS SALARY', 'TOTAL GROSS EARNING'],
+                'INHAND': ['NET', 'NET SALARY', 'IN HAND SALARY'],
+            }
+            aliases = alias_map.get(target, [])
+            for alias in aliases:
+                line = self.salary_structure_line_ids.filtered(
+                    lambda l: (l.code and l.code.strip().upper() == alias) or
+                              (l.name and l.name.strip().upper() == alias) or
+                              (l.code_id and l.code_id.code and l.code_id.code.strip().upper() == alias) or
+                              (l.code_id and l.code_id.name and l.code_id.name.strip().upper() == alias)
+                )[:1]
+                if line:
+                    break
+
+        return line
+
+    def has_salary_breakdown_line(self, code_or_category):
+        """Check if contract has a component line matching the given code or category."""
+        self.ensure_one()
+        return bool(self._get_breakdown_line(code_or_category))
+
+    def get_salary_breakdown_amount(self, code_or_category):
         """Helper for Standard Salary Rules to get breakdown values from custom config."""
         self.ensure_one()
-        line = self.salary_structure_line_ids.filtered(lambda l: l.code == code)[:1]
-        return line.amount_monthly if line else 0.0
+        line = self._get_breakdown_line(code_or_category)
+        return float(line.amount_monthly or 0.0) if line else 0.0
 
     # Bonus field - additional allowance
     bonus_amount = fields.Monetary(
@@ -149,28 +217,82 @@ class HrContract(models.Model):
 
     # ----- Business Logic -----
     def _apply_salary_structure_template(self):
-        """Copy lines from salary structure template to contract."""
-        self.ensure_one()
-        if not self.salary_structure_id:
-            return
+        """Copy/sync lines from salary structure template to contract respecting employee overrides."""
+        self._sync_salary_structure_from_template()
 
-        lines_vals = []
-        for line in self.salary_structure_id.line_ids.filtered(lambda l: l.show_in_offer):
-            lines_vals.append((0, 0, {
-                'name': line.name,
-                'code': line.code,
-                'code_id': line.code_id.id if line.code_id else False,
-                'sequence': line.sequence,
-                'impact': line.impact,
-                'compute_mode': line.compute_mode,
-                'value': line.value,
-                'python_code': line.python_code,
-            }))
+    def _sync_salary_structure_from_template(self):
+        """Single central method for syncing contract salary lines with master template."""
+        summary_stats = {'updated': 0, 'preserved': 0, 'added': 0, 'removed': 0}
+        for contract in self:
+            if not contract.salary_structure_id:
+                continue
 
-        if lines_vals:
-            # Clear existing lines and add new ones
-            self.salary_structure_line_ids = [(5, 0, 0)] + lines_vals
-            self._recompute_structure_line_amounts()
+            template_lines = contract.salary_structure_id.line_ids.filtered(lambda l: l.show_in_offer)
+            template_line_ids = set(template_lines.ids)
+
+            existing_lines_by_tmpl = {
+                line.template_line_id.id: line 
+                for line in contract.salary_structure_line_ids 
+                if line.template_line_id
+            }
+            existing_lines_by_code = {
+                line.code: line 
+                for line in contract.salary_structure_line_ids 
+                if line.code and not line.template_line_id
+            }
+
+            ctx_sync = dict(self.env.context, from_template_sync=True)
+
+            for t_line in template_lines:
+                c_line = existing_lines_by_tmpl.get(t_line.id) or existing_lines_by_code.get(t_line.code)
+                if c_line:
+                    if not c_line.is_override:
+                        # Update template-controlled component
+                        c_line.with_context(ctx_sync).write({
+                            'name': t_line.name,
+                            'code': t_line.code,
+                            'code_id': t_line.code_id.id if t_line.code_id else False,
+                            'sequence': t_line.sequence,
+                            'impact': t_line.impact,
+                            'compute_mode': t_line.compute_mode,
+                            'value': t_line.value,
+                            'python_code': t_line.python_code,
+                            'template_line_id': t_line.id,
+                        })
+                        summary_stats['updated'] += 1
+                    else:
+                        # Preserve overridden component (do NOT alter compute_mode, value, python_code)
+                        if not c_line.template_line_id:
+                            c_line.with_context(ctx_sync).write({'template_line_id': t_line.id})
+                        summary_stats['preserved'] += 1
+                else:
+                    # Add new template component
+                    contract.env['hr.contract.salary.structure.line'].with_context(ctx_sync).create({
+                        'contract_id': contract.id,
+                        'name': t_line.name,
+                        'code': t_line.code,
+                        'code_id': t_line.code_id.id if t_line.code_id else False,
+                        'sequence': t_line.sequence,
+                        'impact': t_line.impact,
+                        'compute_mode': t_line.compute_mode,
+                        'value': t_line.value,
+                        'python_code': t_line.python_code,
+                        'template_line_id': t_line.id,
+                        'is_override': False,
+                    })
+                    summary_stats['added'] += 1
+
+            # Clean up template lines removed from master (if not overridden)
+            for c_line in list(contract.salary_structure_line_ids):
+                if c_line.template_line_id and c_line.template_line_id.id not in template_line_ids:
+                    if not c_line.is_override:
+                        c_line.with_context(ctx_sync).unlink()
+                        summary_stats['removed'] += 1
+                    else:
+                        summary_stats['preserved'] += 1
+
+            contract._recompute_structure_line_amounts()
+        return summary_stats
 
     def _recompute_structure_line_amounts(self):
         """Recompute all structure line amounts with formula dependencies."""
@@ -280,17 +402,22 @@ class HrContract(models.Model):
 
     def action_refresh_salary_structure(self):
         """Button action to refresh salary structure from template."""
-        reloaded_count = 0
-        for contract in self:
-            if contract.salary_structure_id:
-                contract._apply_salary_structure_template()
-                reloaded_count += 1
+        stats = self._sync_salary_structure_from_template()
+        msg = _(
+            "%(contracts)d contract(s) reloaded from template.\n"
+            "Summary: %(updated)d updated, %(preserved)d custom override(s) preserved, %(added)d new component(s) added."
+        ) % {
+            'contracts': len(self),
+            'updated': stats['updated'],
+            'preserved': stats['preserved'],
+            'added': stats['added'],
+        }
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': _('Reload from Template'),
-                'message': _('%d contract(s) reloaded from template successfully.') % reloaded_count,
+                'message': msg,
                 'type': 'success',
                 'sticky': False,
             }
@@ -332,6 +459,22 @@ class HrContractSalaryStructureLine(models.Model):
         ondelete='cascade',
         index=True,
     )
+    template_line_id = fields.Many2one(
+        'salary.config.structure.line',
+        string='Template Line',
+        ondelete='set null',
+        help='Master template line this component was initialized from.',
+    )
+    is_override = fields.Boolean(
+        string='Override Template',
+        default=False,
+        help='If checked, this component configuration is customized for this employee contract and will be preserved during template reloads.',
+    )
+    source_display = fields.Selection([
+        ('template', 'Template'),
+        ('override', 'Custom Override'),
+    ], string='Source', compute='_compute_source_display', store=True)
+
     sequence = fields.Integer(default=10)
     name = fields.Char(string='Component Name', required=True)
     code_id = fields.Many2one(
@@ -378,6 +521,40 @@ class HrContractSalaryStructureLine(models.Model):
         related='contract_id.currency_id',
         readonly=True,
     )
+
+    @api.depends('is_override')
+    def _compute_source_display(self):
+        for line in self:
+            line.source_display = 'override' if line.is_override else 'template'
+
+    def action_customize_line(self):
+        """Action to mark line as custom override."""
+        self.write({'is_override': True})
+        return True
+
+    def action_use_template_value(self):
+        """Action to reset line to master template value."""
+        for line in self:
+            if line.template_line_id:
+                t_line = line.template_line_id
+                ctx_sync = dict(self.env.context, from_template_sync=True)
+                line.with_context(ctx_sync).write({
+                    'is_override': False,
+                    'name': t_line.name,
+                    'code': t_line.code,
+                    'code_id': t_line.code_id.id if t_line.code_id else False,
+                    'sequence': t_line.sequence,
+                    'impact': t_line.impact,
+                    'compute_mode': t_line.compute_mode,
+                    'value': t_line.value,
+                    'python_code': t_line.python_code,
+                })
+                line.amount_monthly = line._compute_amount_from_contract()
+            else:
+                line.write({'is_override': False})
+        if self.mapped('contract_id'):
+            self.mapped('contract_id')._recompute_structure_line_amounts()
+        return True
 
     @api.depends('amount_monthly')
     def _compute_amount_annual(self):
@@ -510,6 +687,12 @@ class HrContractSalaryStructureLine(models.Model):
         Category = self.env['hr.salary.rule.category']
         vals_to_write = dict(vals)
 
+        # Auto mark override if calculation parameters are modified by user (not system sync)
+        if not self.env.context.get('from_template_sync'):
+            if {'compute_mode', 'value', 'python_code'} & set(vals_to_write.keys()):
+                if 'is_override' not in vals_to_write:
+                    vals_to_write['is_override'] = True
+
         # Sync code and code_id
         if 'code_id' in vals_to_write and 'code' not in vals_to_write:
             code_id = vals_to_write['code_id']
@@ -535,3 +718,4 @@ class HrContractSalaryStructureLine(models.Model):
                         rec.code_id = category
 
         return res
+
